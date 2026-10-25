@@ -1,6 +1,6 @@
 # T-003: Compose stack, database, and migrations
 
-- **Status:** Draft
+- **Status:** Ready
 - **Milestone:** M0
 - **Depends on:** T-002
 - **Requirements:** NFR-3 (database startup component only; frontend completion in T-004)
@@ -24,6 +24,9 @@ ADR-0002 requires all published ports to remain on loopback. ADR-0006 selects Po
 - `mise run dev` starts the database, waits for health, runs migrations, then starts the backend on `127.0.0.1`; T-004 adds the frontend and T-023 adds BRouter.
 - `DatabaseProbe` protocol in `services/health.py`, implemented in `adapters/db/` using `SELECT 1` with a two-second timeout and injected into the health service. `/health` stays HTTP 200 and reports exact `db` status.
 - Test fixtures in `tests/integration/conftest.py`: a session-scoped PostGIS testcontainer and migrations to head. Per-test transactions use `join_transaction_mode="create_savepoint"`; a test-only table proves commit isolation.
+- `mise run check` runs the integration tests and counts them toward the backend coverage gate. Docker is required; if Docker is unreachable, `check` fails with a one-line message.
+- `mise run dev` fails fast when Docker is unreachable or the configured `DB_PORT` is already in use, printing a one-line actionable message and exiting non-zero. It does not skip the database.
+- Do not enable the SQLAlchemy mypy plugin (spec §9.1 deviation; update the spec and record it in completion notes). Use local GeoAlchemy2 stubs under `backend/typings/` if needed.
 - Compose host-port validation uses a pure `find_non_loopback_ports(compose: dict) -> list[str]` and PyYAML. It supports short and long syntax, rejects missing host IP, `0.0.0.0`, `localhost`, and `::1`, and permits only explicit `127.0.0.1` published bindings or `expose`-only services.
 
 ### Out
@@ -37,6 +40,7 @@ ADR-0002 requires all published ports to remain on loopback. ADR-0006 selects Po
 - [ ] AC5: Given short- and long-form published port entries, the checker reports missing host IP, `0.0.0.0`, `localhost`, and `::1`, permits only `127.0.0.1` and expose-only services, and reports no violations for the real compose file.
 - [ ] AC6: Given the pinned Python 3.14.x environment, when the automated dependency smoke test installs and imports all T-003 runtime dependencies, then it succeeds; otherwise record the error, block the ticket, and stop without changing the toolchain pin.
 - [ ] AC7: Given the README, when its database section is read, then it explains the local volume, that `docker compose down -v` deletes user data, and that normal stop/start preserves it.
+- [ ] AC8: Given Docker is unreachable or `DB_PORT` is already bound, when `mise run dev` starts, then it exits non-zero before starting any service and prints a one-line message naming the cause and the fix (start Docker, or set `DB_PORT` in `.env`).
 
 ## Test plan
 | AC | Level | Test |
@@ -48,6 +52,7 @@ ADR-0002 requires all published ports to remain on loopback. ADR-0006 selects Po
 | AC5 | unit/configuration | `backend/tests/unit/test_compose_ports.py::test_port_binding_validation` |
 | AC6 | unit/dependency smoke | `backend/tests/unit/test_runtime_dependencies.py::test_database_dependencies_import` |
 | AC7 | docs | `backend/tests/unit/test_readme_database_docs.py::test_database_volume_warning_is_documented` |
+| AC8 | unit | `backend/tests/unit/test_dev_preflight.py::test_preflight_fails_fast_on_docker_or_port_error` (injected Docker and port probes) |
 
 ## Definition of Done
 - [ ] All ACs are covered by automated tests
