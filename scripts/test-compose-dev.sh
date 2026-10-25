@@ -20,8 +20,10 @@ for _ in $(seq 1 120); do
     exit 1
   fi
   body="$(curl -fsS "http://127.0.0.1:${PORT}/api/v1/health" 2>/dev/null || true)"
-  if [ -n "$body" ] && echo "$body" | grep -q '"db":"ok"'; then
-    echo "PASS: dev stack health reports db ok"
+  # Any HTTP response (the root is 404) proves RouteServer is listening on the published port.
+  brouter_code="$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:${BROUTER_PORT:-17777}/" 2>/dev/null || true)"
+  if [ -n "$body" ] && echo "$body" | grep -q '"db":"ok"' && [ -n "$brouter_code" ] && [ "$brouter_code" != "000" ]; then
+    echo "PASS: dev stack health reports db ok and BRouter is listening"
     exit 0
   fi
   sleep 2

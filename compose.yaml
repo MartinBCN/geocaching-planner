@@ -24,5 +24,23 @@ services:
       retries: 20
       start_period: 10s
 
+  brouter:
+    build:
+      context: ./infra/brouter
+    restart: unless-stopped
+    ports:
+      # Host port is configurable with BROUTER_PORT; loopback only (ADR-0002).
+      - "127.0.0.1:${BROUTER_PORT:-17777}:17777"
+    volumes:
+      # Segments (*.rd5) are downloaded by `mise run brouter:segments`; the service starts without them.
+      - ./infra/brouter/segments:/data/segments:ro
+      - ./infra/brouter/profiles:/data/profiles:ro
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s -o /dev/null http://127.0.0.1:17777/ || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 15s
+
 volumes:
   db-data:

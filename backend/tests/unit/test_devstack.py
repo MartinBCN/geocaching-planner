@@ -83,6 +83,50 @@ def test_main_starts_database_migrates_and_serves(monkeypatch: pytest.MonkeyPatc
     assert served == [["--reload"]]
 
 
+def test_main_fetches_brouter_release_and_starts_db_and_brouter(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(devstack, "_docker_reachable", lambda: True)
+    monkeypatch.setattr(devstack, "_port_free", lambda _port: True)
+    monkeypatch.setattr(devstack, "_db_running", lambda: False)
+    calls: list[list[str]] = []
+
+    def _record(argv: list[str], **_kwargs: object) -> Any:
+        calls.append(list(argv))
+        return _completed(0)
+
+    monkeypatch.setattr(subprocess, "run", _record)
+    monkeypatch.setattr(command, "upgrade", lambda _cfg, _rev: None)
+    monkeypatch.setattr(entry, "main", lambda _argv: None)
+
+    devstack.main([])
+
+    fetch = [c for c in calls if c[-1].endswith("fetch-release.sh")]
+    up = [c for c in calls if "compose" in c and "up" in c]
+    assert fetch, "BRouter release is not fetched before compose up"
+    assert calls.index(fetch[0]) < calls.index(up[0])
+    assert up[0][-3:] == ["--wait", "db", "brouter"]
+
+
+def test_main_stops_when_brouter_release_fetch_fails(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(devstack, "_docker_reachable", lambda: True)
+    monkeypatch.setattr(devstack, "_port_free", lambda _port: True)
+    monkeypatch.setattr(devstack, "_db_running", lambda: False)
+    calls: list[list[str]] = []
+
+    def _fail_fetch(argv: list[str], **_kwargs: object) -> Any:
+        calls.append(list(argv))
+        return _completed(7 if argv[-1].endswith("fetch-release.sh") else 0)
+
+    monkeypatch.setattr(subprocess, "run", _fail_fetch)
+
+    with pytest.raises(SystemExit) as excinfo:
+        devstack.main([])
+
+    assert excinfo.value.code == 7
+    assert not any("compose" in c for c in calls)
+
+
 def test_main_stops_when_compose_up_fails(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(devstack, "_docker_reachable", lambda: True)
     monkeypatch.setattr(devstack, "_port_free", lambda _port: True)

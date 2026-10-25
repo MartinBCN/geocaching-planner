@@ -114,6 +114,10 @@ run = "scripts/test-compose-dev.sh"
 description = "Regenerate the API client (owned by T-004)"
 run = "scripts/not-implemented.sh api:gen T-004"
 
+[tasks."brouter:fetch"]
+description = "Download the pinned BRouter release ZIP into infra/brouter/.cache (T-023)"
+run = "sh infra/brouter/fetch-release.sh"
+
 [tasks."brouter:segments"]
-description = "Download BRouter segments (owned by T-023)"
-run = "scripts/not-implemented.sh brouter:segments T-023"
+description = "Download BRouter routing segments (BROUTER_SEGMENTS, default E0_N50,E5_N50) (T-023)"
+run = "uv run --locked --project backend python backend/scripts/brouter_segments.py"

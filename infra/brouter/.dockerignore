@@ -1,0 +1,4 @@
+# Segment data is mounted at runtime and can be several GB; keep it out of the build context.
+segments/
+profiles/
+*.rd5
