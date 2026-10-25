@@ -5,6 +5,7 @@
 - **Depends on:** T-XXX, T-YYY (or –)
 - **Requirements:** IMP-1, CAC-2 … (IDs from docs/specification.md)
 - **Related ADRs:** ADR-XXXX
+- **Reviews:** – (links to docs/reviews/features/… once council-reviewed)
 
 ## Goal
 One or two sentences: what the user or developer can do when this is done.

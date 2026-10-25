@@ -123,7 +123,7 @@ IDs are stable. Tickets reference them.
 
 ```
 ┌──────────────── Browser ────────────────┐
-│ React + TS + Vite                        │
+│ React + TS + Vite + React Router          │
 │ MapLibre GL · TanStack Query · Recharts  │
 └──────────────┬──────────────────────────┘
                │ JSON / OpenAPI (generated TS client)
@@ -157,7 +157,7 @@ IDs are stable. Tickets reference them.
 │   ├── pyproject.toml  uv.lock  alembic.ini
 │   ├── src/geocaching_planner/{api,services,domain,adapters,config.py,main.py}
 │   ├── migrations/
-│   └── tests/{unit,integration,contract,fixtures}
+│   └── tests/{unit,integration,contract,shared,fixtures}
 ├── frontend/
 │   ├── package.json  vite.config.ts  biome.json  tsconfig.json  playwright.config.ts
 │   ├── src/{api,components,features,lib}
@@ -170,16 +170,19 @@ IDs are stable. Tickets reference them.
 
 | Entity | Key fields |
 |---|---|
-| `Cache` | `gc_code` (PK, unique), `name`, `type`, `container`, `difficulty`, `terrain`, `owner`, `placed_at`, `location` (geography Point 4326), `country`, `state`, `short_description`, `long_description`, `description_is_html`, `hint`, `attributes` (jsonb), `is_available`, `is_archived`, `found_by_me`, `found_at`, `source`, `source_updated_at`, `created_at`, `updated_at` |
-| `CacheWaypoint` | `id`, `cache_gc_code` (FK), `prefix`/`code`, `name`, `type`, `location` (nullable), `description` |
-| `CacheLog` | `id` (source log id), `cache_gc_code` (FK), `type`, `finder`, `logged_at`, `text` |
+| `Cache` | `gc_code` (PK, unique), `name`, `type`, `source_type`, `container`, `source_container`, `difficulty`, `terrain`, `owner`, `placed_at`, `location` (geography Point 4326), `country`, `state`, `short_description`, `long_description`, `description_is_html`, `hint`, `attributes` (jsonb), `is_available`, `is_archived`, `found_by_me`, `found_at`, `source`, `source_updated_at`, `source_hash`, `created_at`, `updated_at`; aggregate root containing logs and optional waypoint input (`None` means waypoint data absent; empty means clear) |
+| `CacheWaypoint` | `id`, `cache_gc_code` (FK), `prefix`/`code`, `name`, `type`, raw `source_type`, `location` (nullable), `description` |
+| `CacheLog` | `id` (source log id), `cache_gc_code` (FK), `type`, raw `source_type`, `finder`, `logged_at`, `text` |
 | `UserCacheData` | `cache_gc_code` (PK/FK), `note`, `corrected_location`. Kept separate so an import never touches it. |
-| `ImportRun` | `id`, `started_at`, `finished_at`, `source`, `filenames`, `created`, `updated`, `unchanged`, `errors` (jsonb) |
+| `ImportRun` | `id`, `started_at`, `finished_at`, `source`, `filenames`, `created`, `updated`, `unchanged`, `waypoints`, `errors` (jsonb entries with severity and parse context) |
 | `Route` | `id`, `name`, `profile`, `geometry` (LineStringZ 4326, nullable until computed), `distance_m`, `ascent_m`, `descent_m`, `computed_at`, `created_at`, `updated_at` |
 | `RouteWaypoint` | `id`, `route_id`, `position`, `location`, `label`, `cache_gc_code` (nullable) |
 | `Settings` | singleton: `home_location`, `avg_speed_kmh`, `corridor_m_default`, `tile_url` override |
 
-The **effective location** of a cache is `coalesce(user.corrected_location, cache.location)`. This is exposed as a single SQL expression or view and used everywhere.
+`source_hash` is a deterministic domain hash over canonical source fields, waypoints, and logs; it excludes user data and persistence timestamps.
+`ImportRun.errors` contains records with `severity`, `file`, optional `gc_code` and `line`, `code`, and human-readable `message`. Warnings use `severity: "warning"` and are presented separately from errors.
+
+The **effective location** of a cache is `coalesce(user.corrected_location, cache.location)`. It may be projected or ordered by as a SQL expression; spatial predicates use separate corrected-location and original-location branches so both GiST indexes remain usable (ADR-0006).
 
 ## 8. API outline (`/api/v1`)
 | Method | Path | Purpose |
@@ -188,6 +191,7 @@ The **effective location** of a cache is `coalesce(user.corrected_location, cach
 | POST | `/imports` | multipart upload → `ImportRun` summary |
 | GET | `/imports` | import history |
 | GET | `/caches` | list with filters, `bbox`, paging, sort |
+| GET | `/caches/markers` | viewport marker tuples with required bbox, filters, truncation flag, and total |
 | GET | `/caches/{gc}` | details incl. waypoints, logs, user data |
 | PUT | `/caches/{gc}/user-data` | note and corrected coordinates |
 | GET | `/caches/export.gpx` | export with the same filters as the list |
@@ -205,15 +209,16 @@ The OpenAPI schema is the contract. The frontend client is generated from it (`o
 ### 9.1 Tooling
 | Concern | Tool |
 |---|---|
-| Tool versions and task runner | **mise** (`mise.toml` pins python 3.14, node LTS, uv; all commands are `mise run <task>`) |
+| Tool versions and task runner | **mise** (`mise.toml` pins concrete Python 3.14.x, Node Active LTS, uv, and pnpm versions; all commands are `mise run <task>`) |
 | Python deps | **uv** (`uv sync`, `uv.lock` committed) |
 | Node deps | **pnpm** (lockfile committed) |
 | Python lint + format | **ruff** (`ruff check`, `ruff format`). Rule sets: `E,F,W,I,N,UP,B,A,C4,SIM,RUF,S,PT,ASYNC,TID` |
-| Python types | **mypy --strict** (with pydantic and sqlalchemy plugins) |
+| Python types | **mypy --strict** (with the pydantic plugin; do not enable the deprecated SQLAlchemy plugin, use local GeoAlchemy2 stubs if needed) |
 | TS lint + format | **Biome** |
 | TS types | `tsc --noEmit` with `strict: true` and `noUncheckedIndexedAccess` |
 | Git hooks | **pre-commit** (ruff, ruff-format, mypy on changed files, biome, end-of-file, trailing whitespace, a large-file check, gitleaks) |
-| CI | **GitHub Actions**: backend job, frontend job, and e2e job (compose) on PRs and `main` |
+| CI | **GitHub Actions**: backend, frontend, e2e, and required pre-commit jobs on PRs, `main`, and manual dispatch |
+| XML parsing | T-007 must use a dependency selected by an accepted ADR; parsing must disable entity/network access and bound ZIP expansion |
 
 ### 9.2 Testing strategy
 | Level | Location | Tooling | What |
@@ -226,6 +231,7 @@ The OpenAPI schema is the contract. The frontend client is generated from it (`o
 
 Rules:
 - **Coverage gate:** backend ≥ 85% line+branch (`pytest --cov --cov-fail-under=85`). Frontend ≥ 80% lines on `src/` excluding generated client (Vitest v8 coverage).
+- Registered `slow` performance tests run in `mise run check:backend` and the CI backend job.
 - Every ticket's acceptance criteria map to at least one automated test.
 - Bug fixes start with a failing test.
 - Fixtures are **synthetic** PQ GPX/ZIP files in `backend/tests/fixtures/` (including edge cases: GPX 1.0 vs 1.1, missing fields, unicode, HTML descriptions, waypoint files, a corrupt entry).
@@ -249,8 +255,8 @@ Rules:
 ## 10. Roadmap
 | Milestone | Tickets | Outcome |
 |---|---|---|
-| **M0 Foundation** | T-001 – T-005 | Repo, tooling, skeletons, compose, CI all green |
-| **M1 Cache management** | T-006 – T-014 | Import PQs, browse/filter on the map and list, notes and corrected coordinates, GPX export |
+| **M0 Foundation** | T-001 – T-005, T-023 | Repo, tooling, skeletons, database, BRouter service, CI all green |
+| **M1 Cache management** | T-006 – T-014, T-024 | Import PQs, browse/filter on the map and list, notes and corrected coordinates, GPX export |
 | **M2 Bike planning** | T-015 – T-020 | Plan routes with BRouter, elevation, caches along route, route export |
 | **Phase 2** | T-021 – T-022 | Auto cache selection; Geocaching.com API (blocked) |
 
@@ -258,7 +264,7 @@ Rules:
 | Risk | Mitigation |
 |---|---|
 | No Geocaching.com API access | GPX-first design with `CacheSource` abstraction (ADR-0003) |
-| BRouter segment files are large (~100–500 MB per region) | Download only the needed 5°×5° tiles via `mise run brouter:segments`. They are git-ignored. |
+| BRouter segment files are large (~100–500 MB per 5°×5° tile) | Download only the needed tiles via `mise run brouter:segments`. They are git-ignored. |
 | Tile provider usage policy | Configurable tile URL and attribution, no prefetching. Document how to self-host tiles if needed. |
 | Variations in the PQ GPX format | Tolerant parser, wide fixture set, error reporting per entry |
 | Python 3.14 is new | All dependencies are verified in T-002. The fallback to 3.13 is a one-line change in `mise.toml`/`pyproject.toml`. |

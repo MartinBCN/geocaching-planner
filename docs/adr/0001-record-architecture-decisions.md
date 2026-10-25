@@ -11,6 +11,8 @@ We will record every significant architectural decision as an ADR in `docs/adr/`
 
 An agent that needs such a change must **write the ADR with status `Proposed` and stop**. Only a human sets it to `Accepted`.
 
+ADRs may be edited in place until they are merged to `main`. After that, a change requires a new ADR that supersedes the old one.
+
 ## Consequences
 - There is a small overhead per decision.
 - Superseded ADRs are kept and marked `Superseded by ADR-XXXX`. They are never deleted.
