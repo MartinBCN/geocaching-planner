@@ -1,6 +1,6 @@
 # T-004: Frontend skeleton and quality gates
 
-- **Status:** Ready
+- **Status:** Complete
 - **Milestone:** M0
 - **Depends on:** T-002, T-003, T-023
 - **Requirements:** NFR-3, NFR-8
@@ -65,4 +65,9 @@ ADR-0002 requires loopback-only local services. ADR-0005 requires the generated 
 - Poll health or refetch on window focus so the status does not remain stale. The health indicator uses text, not color alone, and navigation links have visible keyboard focus.
 
 ## Completion notes
-_…_
+- `mise run check` is green (backend 94.61% coverage, frontend 84.84% line coverage, API schema drift check passes, clean-clone setup passes).
+- `mise run test:e2e` passes against the real `mise run dev` stack (AC1, AC7).
+- openapi-fetch captures `fetch` at client creation, so the client resolves `fetch` per call to let MSW intercept requests.
+- `typescript` is pinned to 5.9.3 because openapi-typescript 7.13 needs the TypeScript compiler API, which TypeScript 7 removed.
+- Node uses the system CA store (`NODE_USE_SYSTEM_CA=1` in `mise.toml [env]`) to work behind the corporate TLS proxy.
+- `devstack` starts and stops the Vite dev server alongside the backend.

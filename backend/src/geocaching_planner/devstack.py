@@ -104,7 +104,28 @@ def main(argv: Sequence[str] | None = None) -> None:
 
     from geocaching_planner.__main__ import main as serve
 
-    serve(["--reload"] if argv is None else list(argv))
+    vite = _start_frontend()
+    try:
+        serve(["--reload"] if argv is None else list(argv))
+    finally:
+        _stop_frontend(vite)
+
+
+def _start_frontend() -> subprocess.Popen[bytes]:
+    """Start the Vite dev server (loopback, strict port) as a child of the dev stack."""
+    vite = REPO_ROOT / "frontend" / "node_modules" / ".bin" / "vite"
+    return subprocess.Popen([str(vite)], cwd=REPO_ROOT / "frontend")  # noqa: S603 - fixed argv
+
+
+def _stop_frontend(vite: subprocess.Popen[bytes]) -> None:
+    if vite.poll() is not None:
+        return
+    vite.terminate()
+    try:
+        vite.wait(timeout=10)
+    except subprocess.TimeoutExpired:
+        vite.kill()
+        vite.wait()
 
 
 if __name__ == "__main__":

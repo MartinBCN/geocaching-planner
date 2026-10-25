@@ -7,6 +7,7 @@ repos:
         args: ["--markdown-linebreak-ext=md"]
       - id: end-of-file-fixer
       - id: check-yaml
+        exclude: ^frontend/pnpm-lock\.yaml$
       - id: check-toml
       - id: check-added-large-files
         args: ["--maxkb=500"]
@@ -37,6 +38,13 @@ repos:
         pass_filenames: false
         files: ^backend/
         types: [python]
+      - id: biome-check
+        name: biome check --write (frontend)
+        entry: mise exec -- pnpm --dir frontend exec biome check --write .
+        language: system
+        pass_filenames: false
+        files: ^frontend/
+        types_or: [ts, tsx, javascript, json, css]
       - id: gitleaks
         name: gitleaks (mise-pinned binary)
         entry: gitleaks git --pre-commit --staged --redact --no-banner
