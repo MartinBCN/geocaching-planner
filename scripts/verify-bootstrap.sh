@@ -11,8 +11,8 @@ cd "$ROOT"
 TMP_DIRS=()
 trap 'rm -rf ${TMP_DIRS[@]+"${TMP_DIRS[@]}"}' EXIT
 
-STUB_TASKS=(test:frontend test:e2e api:gen brouter:segments)
-REQUIRED_TASKS=(setup dev check lint fmt test test:bootstrap test:backend test:frontend test:e2e db:migrate db:revision test:compose:db test:compose:dev api:gen brouter:segments check:pre-commit lint:backend fmt:backend typecheck:backend check:backend verify:python:314)
+STUB_TASKS=()
+REQUIRED_TASKS=(setup dev check lint fmt test test:bootstrap test:backend test:frontend test:e2e db:migrate db:revision test:compose:db test:compose:dev api:gen api:check brouter:segments check:pre-commit lint:backend fmt:backend typecheck:backend check:backend lint:frontend fmt:frontend typecheck:frontend check:frontend verify:python:314)
 
 fail() { echo "FAIL: $*" >&2; exit 1; }
 pass() { echo "PASS: $1"; }
@@ -21,7 +21,7 @@ pass() { echo "PASS: $1"; }
 verify_task_inventory() {
   local json
   json="$(mise tasks --json)"
-  JSON="$json" REQUIRED="${REQUIRED_TASKS[*]}" STUBS="${STUB_TASKS[*]}" python3 - <<'PY' || exit 1
+  JSON="$json" REQUIRED="${REQUIRED_TASKS[*]}" STUBS="${STUB_TASKS[*]:-}" python3 - <<'PY' || exit 1
 import json, os, sys
 tasks = {t["name"]: t for t in json.loads(os.environ["JSON"])}
 required = os.environ["REQUIRED"].split()
@@ -86,20 +86,6 @@ verify_layout_and_ignore_rules() {
   pass "layout and ignore rules"
 }
 
-# AC5: each stub exits non-zero and names its owning ticket.
-verify_stub_failures_and_check_is_real() {
-  local task out rc
-  for task in "${STUB_TASKS[@]}"; do
-    set +e
-    out="$(mise run "$task" 2>&1)"
-    rc=$?
-    set -e
-    [ "$rc" -ne 0 ] || fail "stub '$task' exited 0"
-    grep -Eq "T-[0-9]{3}" <<<"$out" || fail "stub '$task' does not name an owning ticket"
-  done
-  pass "stub tasks exit non-zero and name owning tickets"
-}
-
 # AC6: required scaffold is tracked (or staged, since git ls-files reads the index).
 verify_required_scaffold_is_tracked() {
   local f
@@ -135,7 +121,6 @@ run_all() {
   verify_layout_and_ignore_rules
   verify_required_scaffold_is_tracked
   verify_hooks_and_setup_idempotence
-  verify_stub_failures_and_check_is_real
   verify_clean_clone_setup
   echo "All bootstrap checks passed."
 }

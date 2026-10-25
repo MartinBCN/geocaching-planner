@@ -1,6 +1,6 @@
 # T-023: BRouter Compose service and segments
 
-- **Status:** Draft
+- **Status:** Complete
 - **Milestone:** M0
 - **Depends on:** T-003
 - **Requirements:** NFR-2, NFR-3, RTE-3

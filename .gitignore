@@ -29,6 +29,8 @@ frontend/coverage/
 # BRouter routing data (downloaded via `mise run brouter:segments`)
 infra/brouter/segments/*
 !infra/brouter/segments/.gitkeep
+# Host-side download cache for the pinned BRouter release ZIP (see infra/brouter/fetch-release.sh)
+infra/brouter/.cache/
 
 # Pocket Query data is personal; test fixtures are the only exception
 *.gpx

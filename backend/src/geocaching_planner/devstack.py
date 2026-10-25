@@ -77,12 +77,25 @@ def main(argv: Sequence[str] | None = None) -> None:
         print(f"dev: {error}", file=sys.stderr)
         raise SystemExit(1)
 
+    fetch = subprocess.run(  # noqa: S603 - fixed argv, no untrusted input
+        ["/bin/sh", str(REPO_ROOT / "infra" / "brouter" / "fetch-release.sh")],
+        check=False,
+        cwd=REPO_ROOT,
+    )
+    if fetch.returncode != 0:
+        print(
+            "dev: could not fetch the BRouter release; check your network and retry.",
+            file=sys.stderr,
+        )
+        raise SystemExit(fetch.returncode)
+
     up = subprocess.run(  # noqa: S603 - fixed argv, no untrusted input
-        [DOCKER, "compose", "up", "-d", "--wait", "db"], check=False, cwd=REPO_ROOT
+        [DOCKER, "compose", "up", "-d", "--wait", "db", "brouter"], check=False, cwd=REPO_ROOT
     )
     if up.returncode != 0:
         print(
-            "dev: the database did not become healthy; see `docker compose logs db`.",
+            "dev: the database or BRouter did not become healthy; "
+            "see `docker compose logs db brouter`.",
             file=sys.stderr,
         )
         raise SystemExit(up.returncode)
@@ -91,7 +104,28 @@ def main(argv: Sequence[str] | None = None) -> None:
 
     from geocaching_planner.__main__ import main as serve
 
-    serve(["--reload"] if argv is None else list(argv))
+    vite = _start_frontend()
+    try:
+        serve(["--reload"] if argv is None else list(argv))
+    finally:
+        _stop_frontend(vite)
+
+
+def _start_frontend() -> subprocess.Popen[bytes]:
+    """Start the Vite dev server (loopback, strict port) as a child of the dev stack."""
+    vite = REPO_ROOT / "frontend" / "node_modules" / ".bin" / "vite"
+    return subprocess.Popen([str(vite)], cwd=REPO_ROOT / "frontend")  # noqa: S603 - fixed argv
+
+
+def _stop_frontend(vite: subprocess.Popen[bytes]) -> None:
+    if vite.poll() is not None:
+        return
+    vite.terminate()
+    try:
+        vite.wait(timeout=10)
+    except subprocess.TimeoutExpired:
+        vite.kill()
+        vite.wait()
 
 
 if __name__ == "__main__":

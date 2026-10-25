@@ -1,6 +1,6 @@
 # T-004: Frontend skeleton and quality gates
 
-- **Status:** Ready
+- **Status:** Complete
 - **Milestone:** M0
 - **Depends on:** T-002, T-003, T-023
 - **Requirements:** NFR-3, NFR-8

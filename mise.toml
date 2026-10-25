@@ -10,6 +10,8 @@ gitleaks = "8.30.1"
 [env]
 # Load .env when present so a clean clone can run `mise run setup` before it exists.
 _.file = { path = ".env", redact = true, required = false }
+# Trust the OS certificate store so Node tools (pnpm, Playwright, Vite) work behind corporate TLS proxies.
+NODE_USE_SYSTEM_CA = "1"
 
 [tasks.setup]
 description = "Install pinned pre-commit hooks and create .env from .env.example if absent"
@@ -17,6 +19,8 @@ run = """
 set -euo pipefail
 uvx pre-commit@4.7.0 install --install-hooks --hook-type pre-commit
 uv sync --locked --project backend
+pnpm --dir frontend install --frozen-lockfile
+pnpm --dir frontend exec playwright install chromium
 if [ ! -f .env ]; then cp .env.example .env; fi
 """
 
@@ -26,7 +30,7 @@ run = "uvx pre-commit@4.7.0 run --all-files"
 
 [tasks.fmt]
 description = "Run the fixing hooks and backend formatter across the repository"
-depends = ["fmt:backend"]
+depends = ["fmt:backend", "fmt:frontend"]
 run = "uvx pre-commit@4.7.0 run --all-files || uvx pre-commit@4.7.0 run --all-files"
 
 [tasks."test:bootstrap"]
@@ -35,19 +39,19 @@ run = "scripts/verify-bootstrap.sh all"
 
 [tasks.lint]
 description = "Lint: pre-commit hooks, bootstrap checks, and backend lint"
-depends = ["check:pre-commit", "test:bootstrap", "lint:backend"]
+depends = ["check:pre-commit", "test:bootstrap", "lint:backend", "lint:frontend"]
 
 [tasks.check]
 description = "All quality gates (same set as CI). Must never call a not-yet-implemented task."
-depends = ["check:pre-commit", "test:bootstrap", "check:backend"]
+depends = ["check:pre-commit", "test:bootstrap", "check:backend", "check:frontend"]
 
 [tasks.dev]
-description = "Start the dev stack: preflight, compose db, migrations, backend with reload (T-003)"
+description = "Start the dev stack: preflight, compose db and brouter, migrations, backend with reload, and Vite (T-003, T-004)"
 run = "uv run --locked --project backend python -m geocaching_planner.devstack"
 
 [tasks.test]
-description = "Run all tests (T-002 backend; T-004 adds frontend)"
-depends = ["test:backend"]
+description = "Run all tests (backend and frontend)"
+depends = ["test:backend", "test:frontend"]
 
 [tasks."test:backend"]
 description = "Backend tests with the 85% coverage gate (owned by T-002)"
@@ -84,12 +88,33 @@ uv run --locked python -c "import fastapi, uvicorn, pydantic_settings, structlog
 """
 
 [tasks."test:frontend"]
-description = "Frontend tests (owned by T-004)"
-run = "scripts/not-implemented.sh test:frontend T-004"
+description = "Frontend unit and component tests with the 80% line coverage gate (T-004)"
+dir = "frontend"
+run = "pnpm test:coverage"
 
 [tasks."test:e2e"]
-description = "E2E smoke tests (owned by T-004)"
-run = "scripts/not-implemented.sh test:e2e T-004"
+description = "E2E smoke tests; Playwright starts mise run dev (needs Docker and Chromium, T-004)"
+dir = "frontend"
+run = "pnpm e2e"
+
+[tasks."lint:frontend"]
+description = "Frontend lint and format check (Biome)"
+dir = "frontend"
+run = "pnpm lint"
+
+[tasks."fmt:frontend"]
+description = "Frontend auto-fix and format (Biome)"
+dir = "frontend"
+run = "pnpm fmt"
+
+[tasks."typecheck:frontend"]
+description = "Frontend strict type check (tsc)"
+dir = "frontend"
+run = "pnpm typecheck"
+
+[tasks."check:frontend"]
+description = "All frontend quality gates: lint, typecheck, tests with coverage, API schema drift (T-004)"
+depends = ["lint:frontend", "typecheck:frontend", "test:frontend", "api:check"]
 
 [tasks."db:migrate"]
 description = "Apply database migrations to the configured database (T-003)"
@@ -111,9 +136,17 @@ description = "mise run dev reaches a healthy /api/v1/health with db ok (needs D
 run = "scripts/test-compose-dev.sh"
 
 [tasks."api:gen"]
-description = "Regenerate the API client (owned by T-004)"
-run = "scripts/not-implemented.sh api:gen T-004"
+description = "Regenerate the frontend API types from the backend OpenAPI document (T-004)"
+run = "scripts/api-schema.sh gen"
+
+[tasks."api:check"]
+description = "Fail if the committed frontend API schema is out of date (T-004)"
+run = "scripts/api-schema.sh check"
+
+[tasks."brouter:fetch"]
+description = "Download the pinned BRouter release ZIP into infra/brouter/.cache (T-023)"
+run = "sh infra/brouter/fetch-release.sh"
 
 [tasks."brouter:segments"]
-description = "Download BRouter segments (owned by T-023)"
-run = "scripts/not-implemented.sh brouter:segments T-023"
+description = "Download BRouter routing segments (BROUTER_SEGMENTS, default E0_N50,E5_N50) (T-023)"
+run = "uv run --locked --project backend python backend/scripts/brouter_segments.py"
