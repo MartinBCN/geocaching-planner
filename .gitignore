@@ -1,0 +1,35 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Node / frontend
+node_modules/
+dist/
+frontend/playwright-report/
+frontend/test-results/
+frontend/coverage/
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# BRouter routing data (downloaded via `mise run brouter:segments`)
+infra/brouter/segments/*
+!infra/brouter/segments/.gitkeep
+
+# Drafts are personal and never tracked
+docs/drafts/*
+!docs/drafts/.gitkeep
