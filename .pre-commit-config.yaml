@@ -16,6 +16,27 @@ repos:
   # so the hook version always matches the one `mise install` provides.
   - repo: local
     hooks:
+      - id: backend-ruff-check
+        name: ruff check (backend)
+        entry: mise exec -- uv run --locked --project backend ruff check --fix backend
+        language: system
+        pass_filenames: false
+        files: ^backend/
+        types: [python]
+      - id: backend-ruff-format
+        name: ruff format (backend)
+        entry: mise exec -- uv run --locked --project backend ruff format backend
+        language: system
+        pass_filenames: false
+        files: ^backend/
+        types: [python]
+      - id: backend-mypy
+        name: mypy --strict (backend)
+        entry: mise exec -- uv run --locked --directory backend mypy src tests
+        language: system
+        pass_filenames: false
+        files: ^backend/
+        types: [python]
       - id: gitleaks
         name: gitleaks (mise-pinned binary)
         entry: gitleaks git --pre-commit --staged --redact --no-banner

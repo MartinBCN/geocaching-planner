@@ -9,10 +9,10 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
 TMP_DIRS=()
-trap 'rm -rf "${TMP_DIRS[@]}"' EXIT
+trap 'rm -rf ${TMP_DIRS[@]+"${TMP_DIRS[@]}"}' EXIT
 
-STUB_TASKS=(dev test test:backend test:frontend test:e2e db:migrate db:revision api:gen brouter:segments)
-REQUIRED_TASKS=(setup dev check lint fmt test test:bootstrap test:backend test:frontend test:e2e db:migrate db:revision api:gen brouter:segments check:pre-commit)
+STUB_TASKS=(test:frontend test:e2e db:migrate db:revision api:gen brouter:segments)
+REQUIRED_TASKS=(setup dev check lint fmt test test:bootstrap test:backend test:frontend test:e2e db:migrate db:revision api:gen brouter:segments check:pre-commit lint:backend fmt:backend typecheck:backend check:backend verify:python:314)
 
 fail() { echo "FAIL: $*" >&2; exit 1; }
 pass() { echo "PASS: $1"; }
@@ -103,7 +103,7 @@ verify_stub_failures_and_check_is_real() {
 # AC6: required scaffold is tracked (or staged, since git ls-files reads the index).
 verify_required_scaffold_is_tracked() {
   local f
-  for f in backend/.gitkeep frontend/.gitkeep infra/brouter/profiles/.gitkeep \
+  for f in backend/pyproject.toml frontend/.gitkeep infra/brouter/profiles/.gitkeep \
            infra/brouter/segments/.gitkeep .editorconfig .env.example; do
     git ls-files --error-unmatch "$f" >/dev/null 2>&1 || fail "$f is not tracked (git add it)"
   done

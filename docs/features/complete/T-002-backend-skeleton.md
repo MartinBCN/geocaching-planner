@@ -1,6 +1,6 @@
 # T-002: Backend skeleton and quality gates
 
-- **Status:** Ready
+- **Status:** Complete
 - **Milestone:** M0
 - **Depends on:** T-001
 - **Requirements:** NFR-4, NFR-5, NFR-7, NFR-8
@@ -83,4 +83,8 @@ See spec §6 (layering) and §9 (standards). This ticket sets the patterns that 
 - The T-003 migration adds the SQLAlchemy typing stubs/configuration; do not enable the deprecated SQLAlchemy mypy plugin.
 
 ## Completion notes
-_…_
+- `mise run check` exits 0: ruff, mypy --strict, 21 pytest tests (92.39% coverage, gate 85%), and `verify:python:314` all pass.
+- `dev` now runs the backend with `--reload` (`python -m geocaching_planner`). T-003 extends it into the full stack.
+- `scripts/verify-bootstrap.sh`: `dev` removed from STUB_TASKS (it is real now). The scaffold check uses `backend/pyproject.toml` instead of `backend/.gitkeep`. The EXIT trap is fixed for bash under `set -u`.
+- pre-commit backend mypy hook runs `uv run --directory backend mypy src tests`, so module resolution matches the mise task.
+- Open items for owner: default `GCP_DATABASE_URL` in `.env.example` is a proposal; the gitleaks `repo: local` hook (`language: system`) deviation from T-001 needs confirmation; review the `authors` email in `backend/pyproject.toml`.

@@ -24,7 +24,8 @@ description = "Run all pre-commit hooks against every file (fails on any hook fa
 run = "uvx pre-commit@4.7.0 run --all-files"
 
 [tasks.fmt]
-description = "Run the fixing hooks across the repository"
+description = "Run the fixing hooks and backend formatter across the repository"
+depends = ["fmt:backend"]
 run = "uvx pre-commit@4.7.0 run --all-files || uvx pre-commit@4.7.0 run --all-files"
 
 [tasks."test:bootstrap"]
@@ -32,26 +33,54 @@ description = "Automated checks for the tooling bootstrap (tasks, hooks, layout,
 run = "scripts/verify-bootstrap.sh all"
 
 [tasks.lint]
-description = "Lint: pre-commit hooks and bootstrap checks"
-depends = ["check:pre-commit", "test:bootstrap"]
+description = "Lint: pre-commit hooks, bootstrap checks, and backend lint"
+depends = ["check:pre-commit", "test:bootstrap", "lint:backend"]
 
 [tasks.check]
 description = "All quality gates (same set as CI). Must never call a not-yet-implemented task."
-depends = ["check:pre-commit", "test:bootstrap"]
-
-# ---- Not-yet-implemented tasks: exit non-zero and name the owning ticket ----
+depends = ["check:pre-commit", "test:bootstrap", "check:backend"]
 
 [tasks.dev]
-description = "Start the dev stack (owned by T-003, extended by T-004 and T-023)"
-run = "scripts/not-implemented.sh dev T-003"
+description = "Start the backend in dev mode with reload (T-003 extends this into the full dev stack)"
+run = "uv run --locked --project backend python -m geocaching_planner --reload"
 
 [tasks.test]
-description = "Run all tests (owned by T-002, T-004)"
-run = "scripts/not-implemented.sh test T-002"
+description = "Run all tests (T-002 backend; T-004 adds frontend)"
+depends = ["test:backend"]
 
 [tasks."test:backend"]
-description = "Backend tests (owned by T-002)"
-run = "scripts/not-implemented.sh test:backend T-002"
+description = "Backend tests with the 85% coverage gate (owned by T-002)"
+dir = "backend"
+run = "uv run --locked pytest"
+
+[tasks."lint:backend"]
+description = "Backend lint and format check (ruff)"
+dir = "backend"
+run = "uv run --locked ruff check . && uv run --locked ruff format --check ."
+
+[tasks."fmt:backend"]
+description = "Backend auto-fix and format (ruff)"
+dir = "backend"
+run = "uv run --locked ruff check --fix . && uv run --locked ruff format ."
+
+[tasks."typecheck:backend"]
+description = "Backend strict type check (mypy)"
+dir = "backend"
+run = "uv run --locked mypy src tests"
+
+[tasks."check:backend"]
+description = "All backend quality gates: lint, typecheck, tests"
+depends = ["lint:backend", "typecheck:backend", "test:backend"]
+
+[tasks."verify:python:314"]
+description = "Locked sync on Python 3.14 and import every runtime package (AC11)"
+dir = "backend"
+run = """
+set -euo pipefail
+uv sync --locked
+uv run --locked python -c "import sys; assert sys.version_info[:2] == (3, 14), sys.version"
+uv run --locked python -c "import fastapi, uvicorn, pydantic_settings, structlog, pydantic, httpx"
+"""
 
 [tasks."test:frontend"]
 description = "Frontend tests (owned by T-004)"

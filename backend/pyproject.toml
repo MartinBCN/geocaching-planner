@@ -1,0 +1,69 @@
+[project]
+name = "geocaching-planner"
+version = "0.1.0"
+description = "Local single-user planner for geocaching and bike routes (ADR-0002)"
+authors = [
+    { name = "m63015", email = "martin.cleven@eon.com" }
+]
+requires-python = ">=3.14,<3.15"
+dependencies = [
+    "fastapi>=0.162.0",
+    "pydantic-settings>=2.16.1",
+    "structlog>=26.1.0",
+    "uvicorn[standard]>=0.54.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.13.5,<0.14.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "mypy>=2.4.0",
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+    "pytest-cov>=7.1.0",
+    "pytest-socket>=0.8.1",
+    "ruff>=0.17.2",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+extend-exclude = [".venv"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "A", "C4", "SIM", "RUF", "S", "PT", "ASYNC", "TID"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"]
+
+[tool.mypy]
+strict = true
+plugins = ["pydantic.mypy"]
+mypy_path = "src"
+files = ["src", "tests"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = [
+    "--strict-markers",
+    "-m", "not brouter",
+    "--disable-socket",
+    "--allow-unix-socket",
+    "--cov=geocaching_planner",
+    "--cov-branch",
+    "--cov-fail-under=85",
+]
+markers = [
+    "integration: needs PostGIS via Docker (opts in to sockets with enable_socket)",
+    "contract: recorded-response contract tests (opt in to sockets with enable_socket)",
+    "brouter: live BRouter test, excluded by default",
+    "slow: performance tests run in check:backend",
+]
+
+[tool.coverage.run]
+branch = true
