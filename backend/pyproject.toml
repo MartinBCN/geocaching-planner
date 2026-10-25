@@ -3,7 +3,7 @@ name = "geocaching-planner"
 version = "0.1.0"
 description = "Local single-user planner for geocaching and bike routes (ADR-0002)"
 authors = [
-    { name = "m63015", email = "martin.cleven@eon.com" }
+    { name = "Martin", email = "martin-cleven@gmx.net" }
 ]
 requires-python = ">=3.14,<3.15"
 dependencies = [

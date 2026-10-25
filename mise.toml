@@ -16,6 +16,7 @@ description = "Install pinned pre-commit hooks and create .env from .env.example
 run = """
 set -euo pipefail
 uvx pre-commit@4.7.0 install --install-hooks --hook-type pre-commit
+uv sync --locked --project backend
 if [ ! -f .env ]; then cp .env.example .env; fi
 """
 

@@ -87,4 +87,4 @@ See spec §6 (layering) and §9 (standards). This ticket sets the patterns that 
 - `dev` now runs the backend with `--reload` (`python -m geocaching_planner`). T-003 extends it into the full stack.
 - `scripts/verify-bootstrap.sh`: `dev` removed from STUB_TASKS (it is real now). The scaffold check uses `backend/pyproject.toml` instead of `backend/.gitkeep`. The EXIT trap is fixed for bash under `set -u`.
 - pre-commit backend mypy hook runs `uv run --directory backend mypy src tests`, so module resolution matches the mise task.
-- Open items for owner: default `GCP_DATABASE_URL` in `.env.example` is a proposal; the gitleaks `repo: local` hook (`language: system`) deviation from T-001 needs confirmation; review the `authors` email in `backend/pyproject.toml`.
+- Owner decisions: stacked on T-001 (not merged); `setup` runs `uv sync --locked --project backend`; default `GCP_DATABASE_URL` confirmed; gitleaks local-hook deviation confirmed; author email corrected by owner.

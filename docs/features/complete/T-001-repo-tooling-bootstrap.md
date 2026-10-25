@@ -63,7 +63,7 @@ The repo currently contains a root `pyproject.toml` (name `geochachingplanner`, 
 
 ## Completion notes
 - **Pinned versions (`mise.toml`):** Python 3.14.9, Node 24.22.1 (Active LTS major 24), uv 0.13.5, pnpm 12.15.0, gitleaks 8.30.1. Pre-commit 4.7.0 via `uvx pre-commit@4.7.0`; `pre-commit/pre-commit-hooks` at `v6.0.0`.
-- **Deviation (gitleaks):** the gitleaks hook is a `repo: local`, `language: system` hook that runs the mise-pinned binary, not a remote `gitleaks/gitleaks` `rev:`. This keeps the hook version identical to `mise install`. Recorded for owner confirmation.
+- **Deviation (gitleaks):** the gitleaks hook is a `repo: local`, `language: system` hook that runs the mise-pinned binary, not a remote `gitleaks/gitleaks` `rev:`. This keeps the hook version identical to `mise install`. Owner confirmed (T-002 session).
 - **Deviation (spec §9.1):** pins follow ADR-0007 concretely (spec line updated).
 - **Other changes:** root `pyproject.toml` removed and root `.venv` deleted; `backend/`, `frontend/`, `infra/brouter/{segments,profiles}` scaffolded with `.gitkeep`; `.gitignore` covers `*.gpx`/`*.zip` with fixture negations; `trailing-whitespace` uses `--markdown-linebreak-ext=md` to keep Markdown hard breaks.
 - **Stubs:** `dev`, `test`, `test:backend`, `test:frontend`, `test:e2e`, `db:migrate`, `db:revision`, `api:gen`, `brouter:segments` exit 1 and name their owning ticket. None is in the `check` graph.
