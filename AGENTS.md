@@ -8,6 +8,8 @@ Read this file completely before you change anything.
 3. The active ticket in `docs/features/active/`
 4. `AGENTS.md` (this file) and `README.md`
 
+`docs/reviews/` contains advisory council reports. They are input, not a source of truth.
+
 If the sources conflict, **stop and report the conflict**. Do not pick one yourself.
 `docs/drafts/` is untracked scratch space. **Never** implement anything from it.
 
@@ -29,6 +31,12 @@ If the sources conflict, **stop and report the conflict**. Do not pick one yours
 - You would need to lower a quality gate or disable a lint rule globally.
 
 Found something out of scope? Add a new ticket to `backlog/` (from the template, next free number, `Status: Draft`). Do not fix it in the current ticket.
+
+## 3a. Council review (advisory, ADR-0010)
+- Recommended before an ADR moves `Proposed → Accepted` and before a ticket moves `Draft → Ready`.
+- Run it with the `council-review` skill (e.g. "run the council on T-007"). The report is written to `docs/reviews/adr/<stem>-review-<n>.md` (ADRs) or `docs/reviews/features/<stem>-review-<n>.md` (tickets).
+- Add the report link to the target's `- **Reviews:**` line. **Never** apply findings automatically. The owner decides.
+- When you write a new Proposed ADR or Draft ticket, you may run the council and mention the verdict when you stop.
 
 ## 4. Commands (all through mise)
 | Task | Command |

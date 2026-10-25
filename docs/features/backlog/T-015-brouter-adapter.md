@@ -2,7 +2,7 @@
 
 - **Status:** Ready
 - **Milestone:** M2
-- **Depends on:** T-005
+- **Depends on:** T-005, T-023
 - **Requirements:** RTE-3, RTE-7, NFR-2
 - **Related ADRs:** ADR-0004
 

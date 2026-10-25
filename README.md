@@ -1,5 +1,7 @@
 # Geocaching Planner
 
+[![CI](https://github.com/MartinBCN/geocaching-planner/actions/workflows/ci.yml/badge.svg)](https://github.com/MartinBCN/geocaching-planner/actions/workflows/ci.yml)
+
 A local, single-user app for planning **bicycle geocaching trips**. It combines GSAK-style cache management, BaseCamp-style route planning, and a cycle-focused map.
 
 - Import Geocaching.com **Pocket Query** GPX/ZIP files into a local PostGIS database
@@ -11,6 +13,7 @@ A local, single-user app for planning **bicycle geocaching trips**. It combines 
 
 ## Quickstart (after M0 is complete)
 ```bash
+mise trust
 mise install            # python 3.14, node, uv, pnpm
 mise run setup          # deps, pre-commit hooks, .env from .env.example
 mise run brouter:segments   # download routing data for your region
@@ -20,6 +23,14 @@ Then open http://localhost:5173.
 
 Requirements: [mise](https://mise.jdx.dev) and Docker.
 
+## Development / CI
+Before merging, require the `backend`, `frontend`, `e2e`, and `pre-commit` GitHub Actions checks.
+
+## Local services and data
+The PostGIS database uses a named Docker volume. Stopping the stack normally preserves your data; **`docker compose down -v` deletes the database volume and its data**.
+
+BRouter only routes in areas covered by downloaded segment tiles. Tile names use the south-west corner of a 5°×5° area: `E0_N50` covers 0–5°E, 50–55°N, and `E5_N50` covers 5–10°E, 50–55°N. These defaults provide initial coverage for 0–10°E, 50–55°N; areas outside those bounds need additional tiles. Configure `BROUTER_SEGMENTS` and run `mise run brouter:segments` to download them. Each tile uses approximately 100–500 MB of disk space. Segment data is git-ignored.
+
 ## Documentation
 | Document | Purpose |
 |---|---|
@@ -27,6 +38,7 @@ Requirements: [mise](https://mise.jdx.dev) and Docker.
 | [docs/adr/](docs/adr/) | Architecture decision records |
 | [docs/features/](docs/features/) | Ticket backlog / active / complete |
 | [AGENTS.md](AGENTS.md) | Rules for coding agents |
+| [docs/reviews/](docs/reviews/) | Council of the Wise review reports (advisory) |
 
 ## Data and licensing notes
 - Data flows one way: nothing is ever uploaded to Geocaching.com. No scraping.

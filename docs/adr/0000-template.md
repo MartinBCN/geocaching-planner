@@ -2,6 +2,7 @@
 
 - **Status:** Proposed | Accepted | Superseded by ADR-XXXX | Deprecated
 - **Date:** YYYY-MM-DD
+- **Reviews:** – (links to docs/reviews/adr/… once council-reviewed)
 
 ## Context
 What problem or force drives this decision? What constraints apply?
