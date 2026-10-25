@@ -1,0 +1,23 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      # Markdown hard line breaks (two trailing spaces) are preserved.
+      - id: trailing-whitespace
+        args: ["--markdown-linebreak-ext=md"]
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-added-large-files
+        args: ["--maxkb=500"]
+      - id: check-merge-conflict
+
+  # gitleaks runs the binary pinned in mise.toml ([tools] gitleaks = "8.30.1"),
+  # so the hook version always matches the one `mise install` provides.
+  - repo: local
+    hooks:
+      - id: gitleaks
+        name: gitleaks (mise-pinned binary)
+        entry: gitleaks git --pre-commit --staged --redact --no-banner
+        language: system
+        pass_filenames: false

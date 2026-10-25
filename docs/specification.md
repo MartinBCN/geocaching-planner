@@ -209,7 +209,7 @@ The OpenAPI schema is the contract. The frontend client is generated from it (`o
 ### 9.1 Tooling
 | Concern | Tool |
 |---|---|
-| Tool versions and task runner | **mise** (`mise.toml` pins concrete Python 3.14.x, Node Active LTS, uv, and pnpm versions; all commands are `mise run <task>`) |
+| Tool versions and task runner | **mise** (`mise.toml` pins exact versions per ADR-0007: Python 3.14.9, Node 24.22.1 (Active LTS), uv 0.13.5, pnpm 12.15.0, gitleaks 8.30.1; all commands are `mise run <task>`) |
 | Python deps | **uv** (`uv sync`, `uv.lock` committed) |
 | Node deps | **pnpm** (lockfile committed) |
 | Python lint + format | **ruff** (`ruff check`, `ruff format`). Rule sets: `E,F,W,I,N,UP,B,A,C4,SIM,RUF,S,PT,ASYNC,TID` |
@@ -267,7 +267,7 @@ Rules:
 | BRouter segment files are large (~100–500 MB per 5°×5° tile) | Download only the needed tiles via `mise run brouter:segments`. They are git-ignored. |
 | Tile provider usage policy | Configurable tile URL and attribution, no prefetching. Document how to self-host tiles if needed. |
 | Variations in the PQ GPX format | Tolerant parser, wide fixture set, error reporting per entry |
-| Python 3.14 is new | All dependencies are verified in T-002. The fallback to 3.13 is a one-line change in `mise.toml`/`pyproject.toml`. |
+| Python 3.14 is new | All dependencies are verified in T-002. The fallback to 3.13 is a one-line change in `mise.toml`/`backend/pyproject.toml`. |
 
 ## 12. Glossary
 - **PQ (Pocket Query):** a saved geocaching.com search that is delivered as a GPX/ZIP to Premium members.

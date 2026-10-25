@@ -30,6 +30,12 @@ frontend/coverage/
 infra/brouter/segments/*
 !infra/brouter/segments/.gitkeep
 
+# Pocket Query data is personal; test fixtures are the only exception
+*.gpx
+*.zip
+!backend/tests/fixtures/**/*.gpx
+!backend/tests/fixtures/**/*.zip
+
 # Drafts are personal and never tracked
 docs/drafts/*
 !docs/drafts/.gitkeep

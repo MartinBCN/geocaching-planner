@@ -1,0 +1,78 @@
+# Exact tool pins (ADR-0007). Do not use floating aliases such as `lts` or `latest`.
+# Pin changes are made explicitly and recorded in the tooling ticket's completion notes.
+[tools]
+python = "3.14.9"
+node = "24.22.1"        # Node 24 is the current Active LTS major
+uv = "0.13.5"
+pnpm = "12.15.0"
+gitleaks = "8.30.1"
+
+[env]
+# Load .env when present so a clean clone can run `mise run setup` before it exists.
+_.file = { path = ".env", redact = true, required = false }
+
+[tasks.setup]
+description = "Install pinned pre-commit hooks and create .env from .env.example if absent"
+run = """
+set -euo pipefail
+uvx pre-commit@4.7.0 install --install-hooks --hook-type pre-commit
+if [ ! -f .env ]; then cp .env.example .env; fi
+"""
+
+[tasks."check:pre-commit"]
+description = "Run all pre-commit hooks against every file (fails on any hook failure)"
+run = "uvx pre-commit@4.7.0 run --all-files"
+
+[tasks.fmt]
+description = "Run the fixing hooks across the repository"
+run = "uvx pre-commit@4.7.0 run --all-files || uvx pre-commit@4.7.0 run --all-files"
+
+[tasks."test:bootstrap"]
+description = "Automated checks for the tooling bootstrap (tasks, hooks, layout, ignore rules)"
+run = "scripts/verify-bootstrap.sh all"
+
+[tasks.lint]
+description = "Lint: pre-commit hooks and bootstrap checks"
+depends = ["check:pre-commit", "test:bootstrap"]
+
+[tasks.check]
+description = "All quality gates (same set as CI). Must never call a not-yet-implemented task."
+depends = ["check:pre-commit", "test:bootstrap"]
+
+# ---- Not-yet-implemented tasks: exit non-zero and name the owning ticket ----
+
+[tasks.dev]
+description = "Start the dev stack (owned by T-003, extended by T-004 and T-023)"
+run = "scripts/not-implemented.sh dev T-003"
+
+[tasks.test]
+description = "Run all tests (owned by T-002, T-004)"
+run = "scripts/not-implemented.sh test T-002"
+
+[tasks."test:backend"]
+description = "Backend tests (owned by T-002)"
+run = "scripts/not-implemented.sh test:backend T-002"
+
+[tasks."test:frontend"]
+description = "Frontend tests (owned by T-004)"
+run = "scripts/not-implemented.sh test:frontend T-004"
+
+[tasks."test:e2e"]
+description = "E2E smoke tests (owned by T-004)"
+run = "scripts/not-implemented.sh test:e2e T-004"
+
+[tasks."db:migrate"]
+description = "Apply database migrations (owned by T-003)"
+run = "scripts/not-implemented.sh db:migrate T-003"
+
+[tasks."db:revision"]
+description = "Create a new migration (owned by T-003)"
+run = "scripts/not-implemented.sh db:revision T-003"
+
+[tasks."api:gen"]
+description = "Regenerate the API client (owned by T-004)"
+run = "scripts/not-implemented.sh api:gen T-004"
+
+[tasks."brouter:segments"]
+description = "Download BRouter segments (owned by T-023)"
+run = "scripts/not-implemented.sh brouter:segments T-023"
