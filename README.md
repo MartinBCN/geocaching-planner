@@ -15,7 +15,7 @@ A local, single-user app for planning **bicycle geocaching trips**. It combines 
 ```bash
 mise trust
 mise install            # python 3.14, node, uv, pnpm
-mise run setup          # deps, pre-commit hooks, .env from .env.example
+mise run setup          # pre-commit hooks, .env from .env.example (a missing .env is fine on a clean clone)
 mise run brouter:segments   # download routing data for your region
 mise run dev            # postgis + brouter + backend + frontend
 ```

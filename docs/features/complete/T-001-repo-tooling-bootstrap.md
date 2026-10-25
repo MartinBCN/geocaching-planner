@@ -1,9 +1,10 @@
 # T-001: Repository and tooling bootstrap
 
-- **Status:** Draft
+- **Status:** Complete
 - **Milestone:** M0
 - **Depends on:** –
-- **Requirements:** NFR-3 (entry point only; completed by T-003/T-004), NFR-4 (`.env.example` scaffold), NFR-8 (local hooks only; CI gate in T-005)
+- **Requirements:** NFR-3 (entry point only; completed by T-003/T-004), NFR-4 (`.env.example` scaffold), NFR-8 (local hooks only; CI gate in T-005). Partial delivery: this ticket delivers only the entry points and scaffolding listed above; the remainder is owned by the tickets named here.
+- **Supported hosts:** macOS and Linux (WSL and native Windows are out of scope).
 - **Related ADRs:** ADR-0007, ADR-0008
 - **Reviews:** [Council review 1](../../reviews/features/T-001-repo-tooling-bootstrap-review-1.md)
 
@@ -31,17 +32,17 @@ The repo currently contains a root `pyproject.toml` (name `geochachingplanner`, 
 - Python and Node project contents (T-002, T-004).
 
 ## Acceptance criteria
-- [ ] AC1: Given a clean clone without `.env`, when `mise trust && mise install && mise run setup` runs non-interactively, then it exits 0, installs `.git/hooks/pre-commit`, and creates `.env` from `.env.example`.
-- [ ] AC2: Given the bootstrap task, when `mise tasks --json` is inspected, then every task named in Scope is present and `mise run check` exits 0 without calling a stub.
-- [ ] AC3: Given `mise run setup` has run, when `mise run lint` runs, then all pinned pre-commit hooks pass; re-running setup leaves an existing `.env` byte-for-byte unchanged.
-- [ ] AC4: Given the repository layout, when git tracking and ignore rules are checked, then root `pyproject.toml`/`uv.lock` are untracked, no root `.venv` exists, `.env` and a segment `.rd5` are ignored, and `.env.example` and `segments/.gitkeep` are not ignored.
-- [ ] AC5: Given any not-yet-implemented task is invoked, when it runs, then it identifies the owning ticket and exits non-zero; `mise run check` never invokes it.
-- [ ] AC6: Given the required repository scaffold, when `git ls-files` is checked, then required `.gitkeep` files and the documented `.editorconfig` are tracked.
+- [x] AC1: Given a clean clone without `.env`, when `mise trust && mise install && mise run setup` runs non-interactively, then it exits 0, installs `.git/hooks/pre-commit`, and creates `.env` from `.env.example`. The check runs in a temporary clone and is automated.
+- [x] AC2: Given the bootstrap task, when `mise tasks --json` is inspected, then every task named in Scope is present and `mise run check` exits 0 without calling a stub.
+- [x] AC3: Given `mise run setup` has run, when `mise run lint` runs, then all pinned pre-commit hooks pass; re-running setup leaves an existing `.env` byte-for-byte unchanged.
+- [x] AC4: Given the repository layout, when git tracking and ignore rules are checked, then root `pyproject.toml`/`uv.lock` are untracked, no root `.venv` exists, `.env` and a segment `.rd5` are ignored, and `.env.example` and `segments/.gitkeep` are not ignored.
+- [x] AC5: Given any not-yet-implemented task is invoked, when it runs, then it identifies the owning ticket and exits non-zero; `mise run check` never invokes it.
+- [x] AC6: Given the required repository scaffold, when `git ls-files` is checked, then required `.gitkeep` files and the documented `.editorconfig` are tracked.
 
 ## Test plan
 | AC | Test level | Test |
 |---|---|---|
-| AC1 | manual clean-clone check until T-005; record output | `mise trust && mise install && mise run setup` |
+| AC1 | automated bootstrap | `scripts/verify-bootstrap.sh::verify_clean_clone_setup` (clones to a temp dir, runs `mise trust && mise install && mise run setup` non-interactively) |
 | AC2 | automated bootstrap | `scripts/verify-bootstrap.sh::verify_task_inventory` |
 | AC3 | automated bootstrap | `scripts/verify-bootstrap.sh::verify_hooks_and_setup_idempotence` |
 | AC4 | automated bootstrap | `scripts/verify-bootstrap.sh::verify_layout_and_ignore_rules` |
@@ -61,4 +62,11 @@ The repo currently contains a root `pyproject.toml` (name `geochachingplanner`, 
 - `.env.example` contains commented sections for backend, database, BRouter, and frontend configuration. Pre-commit must be pinned consistently in setup, checks, and tests.
 
 ## Completion notes
-_…_
+- **Pinned versions (`mise.toml`):** Python 3.14.9, Node 24.22.1 (Active LTS major 24), uv 0.13.5, pnpm 12.15.0, gitleaks 8.30.1. Pre-commit 4.7.0 via `uvx pre-commit@4.7.0`; `pre-commit/pre-commit-hooks` at `v6.0.0`.
+- **Deviation (gitleaks):** the gitleaks hook is a `repo: local`, `language: system` hook that runs the mise-pinned binary, not a remote `gitleaks/gitleaks` `rev:`. This keeps the hook version identical to `mise install`. Owner confirmed (T-002 session).
+- **Deviation (spec §9.1):** pins follow ADR-0007 concretely (spec line updated).
+- **Other changes:** root `pyproject.toml` removed and root `.venv` deleted; `backend/`, `frontend/`, `infra/brouter/{segments,profiles}` scaffolded with `.gitkeep`; `.gitignore` covers `*.gpx`/`*.zip` with fixture negations; `trailing-whitespace` uses `--markdown-linebreak-ext=md` to keep Markdown hard breaks.
+- **Stubs:** `dev`, `test`, `test:backend`, `test:frontend`, `test:e2e`, `db:migrate`, `db:revision`, `api:gen`, `brouter:segments` exit 1 and name their owning ticket. None is in the `check` graph.
+- **Verification:** `mise run check` exits 0. `scripts/verify-bootstrap.sh` covers AC1–AC6, including a clean-clone setup in a temp directory.
+- **Known limit:** `git ls-files` reads the index, so new files must be staged before `mise run test:bootstrap`.
+- **Setup:** the clean-clone check needs network access on the first run (pre-commit hook environments).

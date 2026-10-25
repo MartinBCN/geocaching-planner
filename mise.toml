@@ -1,0 +1,108 @@
+# Exact tool pins (ADR-0007). Do not use floating aliases such as `lts` or `latest`.
+# Pin changes are made explicitly and recorded in the tooling ticket's completion notes.
+[tools]
+python = "3.14.9"
+node = "24.22.1"        # Node 24 is the current Active LTS major
+uv = "0.13.5"
+pnpm = "12.15.0"
+gitleaks = "8.30.1"
+
+[env]
+# Load .env when present so a clean clone can run `mise run setup` before it exists.
+_.file = { path = ".env", redact = true, required = false }
+
+[tasks.setup]
+description = "Install pinned pre-commit hooks and create .env from .env.example if absent"
+run = """
+set -euo pipefail
+uvx pre-commit@4.7.0 install --install-hooks --hook-type pre-commit
+uv sync --locked --project backend
+if [ ! -f .env ]; then cp .env.example .env; fi
+"""
+
+[tasks."check:pre-commit"]
+description = "Run all pre-commit hooks against every file (fails on any hook failure)"
+run = "uvx pre-commit@4.7.0 run --all-files"
+
+[tasks.fmt]
+description = "Run the fixing hooks and backend formatter across the repository"
+depends = ["fmt:backend"]
+run = "uvx pre-commit@4.7.0 run --all-files || uvx pre-commit@4.7.0 run --all-files"
+
+[tasks."test:bootstrap"]
+description = "Automated checks for the tooling bootstrap (tasks, hooks, layout, ignore rules)"
+run = "scripts/verify-bootstrap.sh all"
+
+[tasks.lint]
+description = "Lint: pre-commit hooks, bootstrap checks, and backend lint"
+depends = ["check:pre-commit", "test:bootstrap", "lint:backend"]
+
+[tasks.check]
+description = "All quality gates (same set as CI). Must never call a not-yet-implemented task."
+depends = ["check:pre-commit", "test:bootstrap", "check:backend"]
+
+[tasks.dev]
+description = "Start the backend in dev mode with reload (T-003 extends this into the full dev stack)"
+run = "uv run --locked --project backend python -m geocaching_planner --reload"
+
+[tasks.test]
+description = "Run all tests (T-002 backend; T-004 adds frontend)"
+depends = ["test:backend"]
+
+[tasks."test:backend"]
+description = "Backend tests with the 85% coverage gate (owned by T-002)"
+dir = "backend"
+run = "uv run --locked pytest"
+
+[tasks."lint:backend"]
+description = "Backend lint and format check (ruff)"
+dir = "backend"
+run = "uv run --locked ruff check . && uv run --locked ruff format --check ."
+
+[tasks."fmt:backend"]
+description = "Backend auto-fix and format (ruff)"
+dir = "backend"
+run = "uv run --locked ruff check --fix . && uv run --locked ruff format ."
+
+[tasks."typecheck:backend"]
+description = "Backend strict type check (mypy)"
+dir = "backend"
+run = "uv run --locked mypy src tests"
+
+[tasks."check:backend"]
+description = "All backend quality gates: lint, typecheck, tests"
+depends = ["lint:backend", "typecheck:backend", "test:backend"]
+
+[tasks."verify:python:314"]
+description = "Locked sync on Python 3.14 and import every runtime package (AC11)"
+dir = "backend"
+run = """
+set -euo pipefail
+uv sync --locked
+uv run --locked python -c "import sys; assert sys.version_info[:2] == (3, 14), sys.version"
+uv run --locked python -c "import fastapi, uvicorn, pydantic_settings, structlog, pydantic, httpx"
+"""
+
+[tasks."test:frontend"]
+description = "Frontend tests (owned by T-004)"
+run = "scripts/not-implemented.sh test:frontend T-004"
+
+[tasks."test:e2e"]
+description = "E2E smoke tests (owned by T-004)"
+run = "scripts/not-implemented.sh test:e2e T-004"
+
+[tasks."db:migrate"]
+description = "Apply database migrations (owned by T-003)"
+run = "scripts/not-implemented.sh db:migrate T-003"
+
+[tasks."db:revision"]
+description = "Create a new migration (owned by T-003)"
+run = "scripts/not-implemented.sh db:revision T-003"
+
+[tasks."api:gen"]
+description = "Regenerate the API client (owned by T-004)"
+run = "scripts/not-implemented.sh api:gen T-004"
+
+[tasks."brouter:segments"]
+description = "Download BRouter segments (owned by T-023)"
+run = "scripts/not-implemented.sh brouter:segments T-023"
