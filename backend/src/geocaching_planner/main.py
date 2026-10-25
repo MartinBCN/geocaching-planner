@@ -1,15 +1,20 @@
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from typing import Any
 
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 
 from geocaching_planner import __version__
+from geocaching_planner.adapters.db.engine import create_db_engine, create_session_factory
+from geocaching_planner.adapters.db.probe import SqlAlchemyProbe
 from geocaching_planner.api.errors import register_exception_handlers
 from geocaching_planner.api.middleware import RequestIdMiddleware
 from geocaching_planner.api.problem import PROBLEM_MEDIA_TYPE, Problem
 from geocaching_planner.api.routes.health import router as health_router
 from geocaching_planner.config import AppConfig
 from geocaching_planner.logging_config import configure_logging
+from geocaching_planner.services.health import DatabaseProbe, HealthService
 
 API_PREFIX = "/api/v1"
 PROBLEM_SCHEMA_REF = {"$ref": f"#/components/schemas/{Problem.__name__}"}
@@ -41,11 +46,24 @@ class PlannerAPI(FastAPI):
         return self.openapi_schema
 
 
-def create_app(config: AppConfig | None = None) -> FastAPI:
+def create_app(
+    config: AppConfig | None = None,
+    *,
+    database_probe: DatabaseProbe | None = None,
+) -> FastAPI:
     settings = config if config is not None else AppConfig()
     configure_logging(json_logs=settings.log_json)
+    engine = create_db_engine(settings.database_url)
+
+    @asynccontextmanager
+    async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+        try:
+            yield
+        finally:
+            await engine.dispose()
 
     app = PlannerAPI(
+        lifespan=lifespan,
         title="Geocaching Planner",
         openapi_url=f"{API_PREFIX}/openapi.json",
         docs_url=f"{API_PREFIX}/docs",
@@ -53,6 +71,9 @@ def create_app(config: AppConfig | None = None) -> FastAPI:
         responses=COMMON_RESPONSES,
     )
     app.state.config = settings
+    app.state.session_factory = create_session_factory(engine)
+    probe = database_probe if database_probe is not None else SqlAlchemyProbe(engine)
+    app.state.health_service = HealthService(probe, version=__version__)
     app.add_middleware(RequestIdMiddleware)
     register_exception_handlers(app)
     app.include_router(health_router, prefix=API_PREFIX)

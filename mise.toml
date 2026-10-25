@@ -42,8 +42,8 @@ description = "All quality gates (same set as CI). Must never call a not-yet-imp
 depends = ["check:pre-commit", "test:bootstrap", "check:backend"]
 
 [tasks.dev]
-description = "Start the backend in dev mode with reload (T-003 extends this into the full dev stack)"
-run = "uv run --locked --project backend python -m geocaching_planner --reload"
+description = "Start the dev stack: preflight, compose db, migrations, backend with reload (T-003)"
+run = "uv run --locked --project backend python -m geocaching_planner.devstack"
 
 [tasks.test]
 description = "Run all tests (T-002 backend; T-004 adds frontend)"
@@ -92,12 +92,23 @@ description = "E2E smoke tests (owned by T-004)"
 run = "scripts/not-implemented.sh test:e2e T-004"
 
 [tasks."db:migrate"]
-description = "Apply database migrations (owned by T-003)"
-run = "scripts/not-implemented.sh db:migrate T-003"
+description = "Apply database migrations to the configured database (T-003)"
+dir = "backend"
+run = "uv run --locked alembic upgrade head"
 
 [tasks."db:revision"]
-description = "Create a new migration (owned by T-003)"
-run = "scripts/not-implemented.sh db:revision T-003"
+description = "Create a new migration; pass the message after -- (T-003)"
+dir = "backend"
+run = "uv run --locked alembic revision --autogenerate -m \"$MIGRATION_MESSAGE\""
+
+[tasks."test:compose:db"]
+description = "Compose db service becomes healthy and migrates (needs Docker, T-003)"
+dir = "backend"
+run = "uv run --locked pytest -m compose_stack tests/compose/test_compose_db.py --no-cov"
+
+[tasks."test:compose:dev"]
+description = "mise run dev reaches a healthy /api/v1/health with db ok (needs Docker, T-003)"
+run = "scripts/test-compose-dev.sh"
 
 [tasks."api:gen"]
 description = "Regenerate the API client (owned by T-004)"

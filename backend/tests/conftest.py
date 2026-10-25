@@ -10,6 +10,16 @@ from geocaching_planner.config import AppConfig
 from geocaching_planner.main import create_app
 
 
+class FakeProbe:
+    """Stands in for the database so unit tests never open a connection."""
+
+    def __init__(self, healthy: bool = True) -> None:
+        self.healthy = healthy
+
+    async def ping(self) -> bool:
+        return self.healthy
+
+
 @pytest.fixture(autouse=True)
 def _isolate_environment(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     """Clear GCP_* overrides and run from an empty directory so no real .env is read."""
@@ -25,7 +35,7 @@ def config() -> AppConfig:
 
 @pytest.fixture
 def app(config: AppConfig) -> FastAPI:
-    return create_app(config)
+    return create_app(config, database_probe=FakeProbe())
 
 
 @pytest.fixture

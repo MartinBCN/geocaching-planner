@@ -11,8 +11,8 @@ cd "$ROOT"
 TMP_DIRS=()
 trap 'rm -rf ${TMP_DIRS[@]+"${TMP_DIRS[@]}"}' EXIT
 
-STUB_TASKS=(test:frontend test:e2e db:migrate db:revision api:gen brouter:segments)
-REQUIRED_TASKS=(setup dev check lint fmt test test:bootstrap test:backend test:frontend test:e2e db:migrate db:revision api:gen brouter:segments check:pre-commit lint:backend fmt:backend typecheck:backend check:backend verify:python:314)
+STUB_TASKS=(test:frontend test:e2e api:gen brouter:segments)
+REQUIRED_TASKS=(setup dev check lint fmt test test:bootstrap test:backend test:frontend test:e2e db:migrate db:revision test:compose:db test:compose:dev api:gen brouter:segments check:pre-commit lint:backend fmt:backend typecheck:backend check:backend verify:python:314)
 
 fail() { echo "FAIL: $*" >&2; exit 1; }
 pass() { echo "PASS: $1"; }
