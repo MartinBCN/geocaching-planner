@@ -9,5 +9,5 @@ class AppConfig(BaseSettings):
     host: str = "127.0.0.1"
     port: int = 8000
     log_json: bool = False
-    # Local development default; matches the planned compose PostGIS service (T-003).
+    # Local development default; matches the compose PostGIS service defaults (compose.yaml).
     database_url: str = "postgresql+asyncpg://geocaching:geocaching@127.0.0.1:5432/geocaching"

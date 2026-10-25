@@ -213,7 +213,7 @@ The OpenAPI schema is the contract. The frontend client is generated from it (`o
 | Python deps | **uv** (`uv sync`, `uv.lock` committed) |
 | Node deps | **pnpm** (lockfile committed) |
 | Python lint + format | **ruff** (`ruff check`, `ruff format`). Rule sets: `E,F,W,I,N,UP,B,A,C4,SIM,RUF,S,PT,ASYNC,TID` |
-| Python types | **mypy --strict** (with the pydantic plugin; do not enable the deprecated SQLAlchemy plugin, use local GeoAlchemy2 stubs if needed) |
+| Python types | **mypy --strict** (with the pydantic plugin; do not enable the deprecated SQLAlchemy plugin, use local GeoAlchemy2 stubs if needed). *Deviation (T-003):* the SQLAlchemy mypy plugin is not enabled; SQLAlchemy 2.0 `Mapped[]` typing is used directly. |
 | TS lint + format | **Biome** |
 | TS types | `tsc --noEmit` with `strict: true` and `noUncheckedIndexedAccess` |
 | Git hooks | **pre-commit** (ruff, ruff-format, mypy on changed files, biome, end-of-file, trailing whitespace, a large-file check, gitleaks) |

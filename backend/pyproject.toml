@@ -7,8 +7,12 @@ authors = [
 ]
 requires-python = ">=3.14,<3.15"
 dependencies = [
+    "alembic>=1.20.1",
+    "asyncpg>=0.32.0",
     "fastapi>=0.162.0",
+    "geoalchemy2>=0.20.0",
     "pydantic-settings>=2.16.1",
+    "sqlalchemy[asyncio]>=2.1.6",
     "structlog>=26.1.0",
     "uvicorn[standard]>=0.54.0",
 ]
@@ -25,7 +29,10 @@ dev = [
     "pytest-asyncio>=1.4.0",
     "pytest-cov>=7.1.0",
     "pytest-socket>=0.8.1",
+    "pyyaml>=6.0.3",
     "ruff>=0.17.2",
+    "testcontainers[postgres]>=4.15.0",
+    "types-pyyaml>=6.0.12.20260906",
 ]
 
 [tool.ruff]
@@ -38,6 +45,8 @@ select = ["E", "F", "W", "I", "N", "UP", "B", "A", "C4", "SIM", "RUF", "S", "PT"
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S101"]
+# Throwaway password for the test-only PostGIS container.
+"tests/integration/conftest.py" = ["S106"]
 
 [tool.mypy]
 strict = true
@@ -48,10 +57,10 @@ files = ["src", "tests"]
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
-pythonpath = ["src"]
+pythonpath = ["src", "."]
 addopts = [
     "--strict-markers",
-    "-m", "not brouter",
+    "-m", "not brouter and not compose_stack",
     "--disable-socket",
     "--allow-unix-socket",
     "--cov=geocaching_planner",
@@ -62,6 +71,7 @@ markers = [
     "integration: needs PostGIS via Docker (opts in to sockets with enable_socket)",
     "contract: recorded-response contract tests (opt in to sockets with enable_socket)",
     "brouter: live BRouter test, excluded by default",
+    "compose_stack: runs against the running compose stack, excluded by default",
     "slow: performance tests run in check:backend",
 ]
 

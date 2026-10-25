@@ -1,6 +1,6 @@
 # T-003: Compose stack, database, and migrations
 
-- **Status:** Ready
+- **Status:** Complete
 - **Milestone:** M0
 - **Depends on:** T-002
 - **Requirements:** NFR-3 (database startup component only; frontend completion in T-004)
@@ -55,11 +55,11 @@ ADR-0002 requires all published ports to remain on loopback. ADR-0006 selects Po
 | AC8 | unit | `backend/tests/unit/test_dev_preflight.py::test_preflight_fails_fast_on_docker_or_port_error` (injected Docker and port probes) |
 
 ## Definition of Done
-- [ ] All ACs are covered by automated tests
-- [ ] `mise run check` is green
-- [ ] Docs are updated (README / spec / AGENTS / ADR if needed)
-- [ ] There are no TODOs without a linked backlog ticket
-- [ ] Completion notes are filled in and the file is moved to `docs/features/complete/`
+- [x] All ACs are covered by automated tests
+- [x] `mise run check` is green
+- [x] Docs are updated (README / spec / AGENTS / ADR if needed)
+- [x] There are no TODOs without a linked backlog ticket
+- [x] Completion notes are filled in and the file is moved to `docs/features/complete/`
 
 ## Implementation notes
 - Compose publishes the database port only on loopback; keep its host port configurable while preserving that binding.
@@ -69,4 +69,8 @@ ADR-0002 requires all published ports to remain on loopback. ADR-0006 selects Po
 - T-003 owns the database service only. BRouter container, segments, profiles, and download workflow are moved to T-023.
 
 ## Completion notes
-_…_
+- `mise run check` is green (56 unit and integration tests, coverage 96%).
+- `mise run test:compose:db` passes against the live compose stack; `mise run test:compose:dev` confirms `db: ok` on `/api/v1/health`.
+- The PostGIS image is amd64-only. The integration fixture runs an explicit `docker pull --platform linux/amd64` before starting, because testcontainers ignores the platform kwarg for pulls (user decision).
+- Coverage: added unit tests for devstack helpers and `get_session` (devstack was 49%).
+- Lint/type fixes: `tests/__init__.py` packages added so mypy resolves duplicate `conftest` modules; noqa on S603 subprocess calls carry reasons.

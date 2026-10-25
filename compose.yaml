@@ -1,0 +1,28 @@
+# Local services for `mise run dev`. Every published port must stay on 127.0.0.1 (ADR-0002);
+# backend/tests/unit/test_compose_ports.py enforces this.
+name: geocaching-planner
+
+services:
+  db:
+    image: postgis/postgis:17-3.5
+    # The image publishes only amd64; on arm64 hosts this runs under emulation.
+    platform: linux/amd64
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-geocaching}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-geocaching}
+      POSTGRES_DB: ${POSTGRES_DB:-geocaching}
+    ports:
+      # Host port is configurable with DB_PORT; GCP_DATABASE_URL must use the same port.
+      - "127.0.0.1:${DB_PORT:-5432}:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+volumes:
+  db-data:
