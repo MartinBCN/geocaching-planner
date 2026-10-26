@@ -52,7 +52,6 @@ PY
 
 # AC3: pre-commit hooks are installed by setup, and setup keeps an existing .env byte-for-byte.
 verify_hooks_and_setup_idempotence() {
-  [ -f .git/hooks/pre-commit ] || fail "setup did not install .git/hooks/pre-commit"
   local tmp before after
   tmp="$(mktemp -d)"
   TMP_DIRS+=("$tmp")
@@ -62,12 +61,13 @@ verify_hooks_and_setup_idempotence() {
     git init -q
     rm -f .env
     mise run setup >/dev/null
+    [ -f .git/hooks/pre-commit ] || exit 1
     printf 'USER_VALUE=1\n' >> .env
     before="$(shasum -a 256 .env | cut -d' ' -f1)"
     mise run setup >/dev/null
     after="$(shasum -a 256 .env | cut -d' ' -f1)"
     [ "$before" = "$after" ] || exit 1
-  ) || fail "re-running setup changed an existing .env"
+  ) || fail "setup did not install the hook or re-running setup changed an existing .env"
   pass "hooks installed; setup leaves existing .env unchanged"
 }
 
