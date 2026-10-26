@@ -11,5 +11,5 @@ def test_runtime_imports(module: str) -> None:
 
 
 def test_database_dependencies_import() -> None:
-    for module in ("sqlalchemy", "asyncpg", "geoalchemy2", "alembic"):
+    for module in ("sqlalchemy", "asyncpg", "geoalchemy2", "alembic", "lxml.etree"):
         importlib.import_module(module)

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx xmlns="http://www.topografix.com/GPX/1/1" xmlns:groundspeak="http://www.groundspeak.com/cache/1/0/1" version="1.1" creator="synthetic-fixture">
+<wpt lat="48.1" lon="2.3"><name>GC2345Y</name><desc html="True">HTML description</desc>
+<sym>Geocache</sym><extensions><groundspeak:cache id="2345" available="True" archived="False">
+<groundspeak:name>Unicode</groundspeak:name><groundspeak:type>Traditional Cache</groundspeak:type>
+<groundspeak:container>Micro</groundspeak:container><groundspeak:difficulty>1</groundspeak:difficulty>
+<groundspeak:terrain>1</groundspeak:terrain><groundspeak:owner>Synthetic</groundspeak:owner>
+<groundspeak:long_description html="True">&lt;p&gt;Café vélo — 東京 &amp;amp; &lt;strong&gt;geocaching&lt;/strong&gt;&lt;/p&gt;</groundspeak:long_description>
+</groundspeak:cache></extensions></wpt></gpx>
