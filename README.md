@@ -24,7 +24,7 @@ Then open http://localhost:5173.
 Requirements: [mise](https://mise.jdx.dev) and Docker.
 
 ## Development / CI
-Before merging, require the `backend`, `frontend`, `e2e`, and `pre-commit` GitHub Actions checks.
+Before merging, require the `backend`, `frontend`, and `pre-commit` GitHub Actions checks. Playwright E2E is available locally with `mise run test:e2e` and is not run on GitHub-hosted runners.
 
 ## Local services and data
 The PostGIS database uses a named Docker volume (`db-data`). Stopping the stack normally preserves your data, so `docker compose stop` and `docker compose start` keep it. **`docker compose down -v` deletes the database volume and its data.**

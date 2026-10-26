@@ -16,13 +16,21 @@ NODE_USE_SYSTEM_CA = "1"
 [tasks.setup]
 description = "Install pinned pre-commit hooks and create .env from .env.example if absent"
 run = """
-set -euo pipefail
+set -eu
 uvx pre-commit@4.7.0 install --install-hooks --hook-type pre-commit
 uv sync --locked --project backend
 pnpm --dir frontend install --frozen-lockfile
 pnpm --dir frontend exec playwright install chromium
 if [ ! -f .env ]; then cp .env.example .env; fi
 """
+
+[tasks."ci:setup:backend"]
+description = "Install locked backend dependencies for CI"
+run = "uv sync --locked --project backend"
+
+[tasks."ci:setup:frontend"]
+description = "Install locked frontend dependencies for CI"
+run = "pnpm --dir frontend install --frozen-lockfile"
 
 [tasks."check:pre-commit"]
 description = "Run all pre-commit hooks against every file (fails on any hook failure)"
@@ -56,7 +64,7 @@ depends = ["test:backend", "test:frontend"]
 [tasks."test:backend"]
 description = "Backend tests with the 85% coverage gate (owned by T-002)"
 dir = "backend"
-run = "uv run --locked pytest"
+run = "uv run --locked pytest --cov-report=term-missing --cov-report=xml:coverage.xml"
 
 [tasks."lint:backend"]
 description = "Backend lint and format check (ruff)"

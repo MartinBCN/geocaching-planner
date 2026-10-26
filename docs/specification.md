@@ -217,7 +217,7 @@ The OpenAPI schema is the contract. The frontend client is generated from it (`o
 | TS lint + format | **Biome** |
 | TS types | `tsc --noEmit` with `strict: true` and `noUncheckedIndexedAccess` |
 | Git hooks | **pre-commit** (ruff, ruff-format, mypy on changed files, biome, end-of-file, trailing whitespace, a large-file check, gitleaks) |
-| CI | **GitHub Actions**: backend, frontend, e2e, and required pre-commit jobs on PRs, `main`, and manual dispatch |
+| CI | **GitHub Actions**: backend, frontend, and required pre-commit jobs on PRs, `main`, and manual dispatch. Playwright E2E remains available locally and is not run on GitHub-hosted runners for this private, undeployed project. |
 | XML parsing | T-007 must use a dependency selected by an accepted ADR; parsing must disable entity/network access and bound ZIP expansion |
 
 ### 9.2 Testing strategy
