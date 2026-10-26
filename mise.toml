@@ -24,6 +24,28 @@ pnpm --dir frontend exec playwright install chromium
 if [ ! -f .env ]; then cp .env.example .env; fi
 """
 
+[tasks."ci:setup:backend"]
+description = "Install locked backend dependencies for CI"
+run = "uv sync --locked --project backend"
+
+[tasks."ci:setup:frontend"]
+description = "Install locked frontend dependencies for CI"
+run = "pnpm --dir frontend install --frozen-lockfile"
+
+[tasks."ci:setup:e2e"]
+description = "Install backend, frontend, and Chromium dependencies for E2E CI"
+depends = ["ci:setup:backend", "ci:setup:frontend"]
+run = "pnpm --dir frontend exec playwright install --with-deps chromium"
+
+[tasks."build:frontend"]
+description = "Build the production frontend"
+dir = "frontend"
+run = "pnpm build"
+
+[tasks."test:e2e:ci"]
+description = "Run E2E smoke tests against a DB-only CI stack"
+run = "bash scripts/test-e2e-ci.sh"
+
 [tasks."check:pre-commit"]
 description = "Run all pre-commit hooks against every file (fails on any hook failure)"
 run = "uvx pre-commit@4.7.0 run --all-files"
@@ -56,7 +78,7 @@ depends = ["test:backend", "test:frontend"]
 [tasks."test:backend"]
 description = "Backend tests with the 85% coverage gate (owned by T-002)"
 dir = "backend"
-run = "uv run --locked pytest"
+run = "uv run --locked pytest --cov-report=term-missing --cov-report=xml:coverage.xml"
 
 [tasks."lint:backend"]
 description = "Backend lint and format check (ruff)"
