@@ -1,6 +1,6 @@
 # T-006: Cache domain model and schema
 
-- **Status:** Ready
+- **Status:** Complete
 - **Milestone:** M1
 - **Depends on:** T-005
 - **Requirements:** IMP-4, CAC-4, CAC-5 (data model)
@@ -26,11 +26,11 @@ Spec §7 defines the model. User data **must** be stored separately from importe
 - Repository behavior and fakes (T-024), parsing (T-007), querying and filtering (T-010).
 
 ## Acceptance criteria
-- [ ] AC1: Given a fresh PostGIS database, when the migration is applied, then it creates `caches`, `cache_waypoints`, `cache_logs`, `user_cache_data`, and `import_runs`; `pg_indexes` contains both named GiST indexes and all named btree indexes; and `downgrade -1` followed by `upgrade head` restores the same schema.
-- [ ] AC2: Given asymmetric coordinates `(lat=52.1, lon=4.3)`, when mapped to and from PostGIS, then the returned coordinates are unchanged and the point is stored in `POINT(4.3 52.1)` order.
-- [ ] AC3: Given invalid or non-finite latitude/longitude values, when `Coordinates` is constructed, then `ValueError` is raised; valid boundary values are accepted.
-- [ ] AC4: Given cache aggregates with identical canonical source fields, waypoints, and logs, when `content_hash` is computed, then hashes match regardless of input ordering; a change to a source field, waypoint, or log changes the hash, while user data and timestamps do not.
-- [ ] AC5: Given D/T values in `{1.0, 1.5, …, 5.0}`, when a cache is constructed, then it is accepted; values outside the range or increments raise `ValueError`.
+- [x] AC1: Given a fresh PostGIS database, when the migration is applied, then it creates `caches`, `cache_waypoints`, `cache_logs`, `user_cache_data`, and `import_runs`; `pg_indexes` contains both named GiST indexes and all named btree indexes; and `downgrade -1` followed by `upgrade head` restores the same schema.
+- [x] AC2: Given asymmetric coordinates `(lat=52.1, lon=4.3)`, when mapped to and from PostGIS, then the returned coordinates are unchanged and the point is stored in `POINT(4.3 52.1)` order.
+- [x] AC3: Given invalid or non-finite latitude/longitude values, when `Coordinates` is constructed, then `ValueError` is raised; valid boundary values are accepted.
+- [x] AC4: Given cache aggregates with identical canonical source fields, waypoints, and logs, when `content_hash` is computed, then hashes match regardless of input ordering; a change to a source field, waypoint, or log changes the hash, while user data and timestamps do not.
+- [x] AC5: Given D/T values in `{1.0, 1.5, …, 5.0}`, when a cache is constructed, then it is accepted; values outside the range or increments raise `ValueError`.
 
 ## Test plan
 | AC | Level | Test |
@@ -39,11 +39,11 @@ Spec §7 defines the model. User data **must** be stored separately from importe
 | AC3–AC5 | unit | `backend/tests/unit/domain/test_coordinates.py`, `backend/tests/unit/domain/test_content_hash.py`, `backend/tests/unit/domain/test_cache_ratings.py` |
 
 ## Definition of Done
-- [ ] All ACs are covered by automated tests
-- [ ] `mise run check` is green
-- [ ] Docs are updated (README / spec / AGENTS / ADR if needed)
-- [ ] There are no TODOs without a linked backlog ticket
-- [ ] Completion notes are filled in and the file is moved to `docs/features/complete/`
+- [x] All ACs are covered by automated tests
+- [x] `mise run check` is green
+- [x] Docs are updated (README / spec / AGENTS / ADR if needed)
+- [x] There are no TODOs without a linked backlog ticket
+- [x] Completion notes are filled in and the file is moved to `docs/features/complete/`
 
 ## Implementation notes
 - Use frozen stdlib dataclasses in `domain/`; keep Pydantic in `api/` and SQLAlchemy in `adapters/db/`.
@@ -51,4 +51,7 @@ Spec §7 defines the model. User data **must** be stored separately from importe
 - Enum values are persisted as VARCHAR so adding values does not require PostgreSQL ENUM type lifecycle management.
 
 ## Completion notes
-_…_
+- Implemented frozen domain entities, validated coordinates and ratings, and canonical SHA-256 source hashing. Hashing excludes persistence timestamps and waypoint database IDs, normalizes aware timestamps to UTC, and preserves the distinction between absent and empty waypoint collections.
+- Added separate ORM tables for imported aggregates, user data, and import history, explicit spatial/btree indexes, coordinate mapping, the effective-location projection, and reversible migration `0002`.
+- Full `mise run check` passes without skips: 143 backend tests, including real PostGIS coordinate round trips and migration schema restoration, 13 frontend tests, strict typing, linting, API schema drift, hooks, and fresh-checkout bootstrap.
+- At the owner's explicit request, removed actionlint from local hook installation and execution. Its pinned hook now lives in `.github/actionlint.pre-commit-config.yaml`, executed by `mise run ci:lint:workflows` in the required GitHub `pre-commit` job. Added a contract test for this separation and updated README, AGENTS, and ADR-0008. No certificate configuration was changed.
