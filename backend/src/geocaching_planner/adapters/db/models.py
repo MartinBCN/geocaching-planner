@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from geoalchemy2 import Geography
-from geoalchemy2.elements import WKBElement
+from geoalchemy2.elements import WKBElement, WKTElement
 from sqlalchemy import (
     BigInteger,
     Boolean,
@@ -11,6 +11,7 @@ from sqlalchemy import (
     ForeignKey,
     Index,
     Integer,
+    SmallInteger,
     String,
     Text,
     UniqueConstraint,
@@ -138,3 +139,24 @@ class ImportRunModel(Base):
     unchanged: Mapped[int] = mapped_column(Integer, default=0)
     waypoints: Mapped[int] = mapped_column(Integer, default=0)
     errors: Mapped[list[dict[str, str | int | None]]] = mapped_column(JSONB, default=list)
+
+
+class SettingsModel(Base):
+    __tablename__ = "settings"
+    __table_args__ = (CheckConstraint("id = 1", name="singleton_id"),)
+
+    id: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
+    home_location: Mapped[WKBElement | WKTElement | None] = mapped_column(
+        Geography("POINT", srid=4326, spatial_index=False)
+    )
+    avg_speed_kmh: Mapped[float] = mapped_column(Float, default=18.0, server_default="18")
+    corridor_m_default: Mapped[int] = mapped_column(Integer, default=500, server_default="500")
+    default_profile: Mapped[str] = mapped_column(
+        String(32), default="trekking", server_default="trekking"
+    )
+    tile_url: Mapped[str | None] = mapped_column(Text)
+    tile_attribution: Mapped[str] = mapped_column(
+        Text,
+        default="© OpenStreetMap contributors, CyclOSM",
+        server_default="© OpenStreetMap contributors, CyclOSM",
+    )

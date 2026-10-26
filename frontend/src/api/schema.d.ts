@@ -21,10 +21,35 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Settings */
+        get: operations["get_settings_api_v1_settings_get"];
+        /** Update Settings */
+        put: operations["update_settings_api_v1_settings_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** CoordinatesModel */
+        CoordinatesModel: {
+            /** Lat */
+            lat: number;
+            /** Lon */
+            lon: number;
+        };
         /** HealthResponse */
         HealthResponse: {
             /**
@@ -59,6 +84,50 @@ export interface components {
              */
             type: string;
         };
+        /** SettingsPayload */
+        SettingsPayload: {
+            /**
+             * Avg Speed Kmh
+             * @default 18
+             */
+            avg_speed_kmh: number;
+            /**
+             * Corridor M Default
+             * @default 500
+             */
+            corridor_m_default: number;
+            /**
+             * Default Profile
+             * @default trekking
+             * @enum {string}
+             */
+            default_profile: "trekking" | "fastbike" | "safety";
+            home_location?: components["schemas"]["CoordinatesModel"] | null;
+            /**
+             * Tile Attribution
+             * @default © OpenStreetMap contributors, CyclOSM
+             */
+            tile_attribution: string;
+            /** Tile Url */
+            tile_url?: string | null;
+        };
+        /** SettingsResponse */
+        SettingsResponse: {
+            /** Avg Speed Kmh */
+            avg_speed_kmh: number;
+            /** Corridor M Default */
+            corridor_m_default: number;
+            /**
+             * Default Profile
+             * @enum {string}
+             */
+            default_profile: "trekking" | "fastbike" | "safety";
+            home_location: components["schemas"]["CoordinatesModel"] | null;
+            /** Tile Attribution */
+            tile_attribution: string;
+            /** Tile Url */
+            tile_url: string;
+        };
     };
     responses: never;
     parameters: never;
@@ -84,6 +153,122 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HealthResponse"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Method not allowed */
+            405: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    get_settings_api_v1_settings_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SettingsResponse"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Method not allowed */
+            405: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    update_settings_api_v1_settings_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SettingsPayload"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SettingsResponse"];
                 };
             };
             /** @description Not found */

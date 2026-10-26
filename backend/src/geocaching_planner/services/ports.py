@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import Literal, Protocol
 
 from geocaching_planner.domain.cache import Cache
+from geocaching_planner.domain.settings import PlannerSettings
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -40,3 +41,9 @@ class CacheSource(Protocol):
     source_name: str
 
     def iter_caches(self) -> Iterator[CacheParseResult]: ...
+
+
+class SettingsRepository(Protocol):
+    async def get(self) -> PlannerSettings | None: ...
+
+    async def save(self, settings: PlannerSettings) -> PlannerSettings: ...
