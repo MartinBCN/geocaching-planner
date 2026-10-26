@@ -1,11 +1,11 @@
 # T-024: Cache repository and persistence behavior
 
-- **Status:** Draft
+- **Status:** Ready
 - **Milestone:** M1
 - **Depends on:** T-006
 - **Requirements:** IMP-4, IMP-5, IMP-6 (persistence), CAC-4, CAC-5 (persistence)
 - **Related ADRs:** ADR-0003, ADR-0006
-- **Reviews:** –
+- **Reviews:** [Council review 1](../../reviews/features/T-024-cache-repository-review-1.md)
 
 ## Goal
 Persist cache aggregates through one asynchronous repository contract that is shared by imports, queries, and unit tests.

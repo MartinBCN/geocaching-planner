@@ -7,7 +7,14 @@ from sqlalchemy.ext.asyncio import create_async_engine
 
 from geocaching_planner.adapters.db.migrations import alembic_config
 
-DOMAIN_TABLES = {"caches", "cache_waypoints", "cache_logs", "user_cache_data", "import_runs"}
+DOMAIN_TABLES = {
+    "caches",
+    "cache_waypoints",
+    "cache_logs",
+    "user_cache_data",
+    "import_runs",
+    "settings",
+}
 
 
 def _schema_snapshot(url: str) -> object:
@@ -22,20 +29,22 @@ def _schema_snapshot(url: str) -> object:
                      is_nullable, column_default
               FROM information_schema.columns
               WHERE table_schema = 'public' AND table_name IN
-                ('caches', 'cache_waypoints', 'cache_logs', 'user_cache_data', 'import_runs')
+                ('caches', 'cache_waypoints', 'cache_logs', 'user_cache_data', 'import_runs',
+                 'settings')
             ) c
           ),
           'indexes', (
             SELECT jsonb_agg(indexdef ORDER BY indexname) FROM pg_indexes
             WHERE schemaname = 'public' AND tablename IN
-              ('caches', 'cache_waypoints', 'cache_logs', 'user_cache_data', 'import_runs')
+              ('caches', 'cache_waypoints', 'cache_logs', 'user_cache_data', 'import_runs',
+               'settings')
           ),
           'constraints', (
             SELECT jsonb_agg(pg_get_constraintdef(oid) ORDER BY conname)
             FROM pg_constraint
             WHERE conrelid IN ('caches'::regclass, 'cache_waypoints'::regclass,
                               'cache_logs'::regclass, 'user_cache_data'::regclass,
-                              'import_runs'::regclass)
+                              'import_runs'::regclass, 'settings'::regclass)
           )
         )
         """,
@@ -73,24 +82,25 @@ def test_baseline_migration_roundtrip(postgis_url: str) -> None:
     config = alembic_config(target_url)
 
     command.upgrade(config, "head")
-    assert _query_scalar(target_url, "SELECT version_num FROM alembic_version") == "0002"
+    assert _query_scalar(target_url, "SELECT version_num FROM alembic_version") == "0003"
     assert _query_scalar(target_url, "SELECT postgis_version()")
     snapshot = _schema_snapshot(target_url)
 
     command.downgrade(config, "-1")
-    assert _query_scalar(target_url, "SELECT version_num FROM alembic_version") == "0001"
-    for table in DOMAIN_TABLES:
-        assert _query_scalar(target_url, f"SELECT to_regclass('public.{table}')") is None
+    assert _query_scalar(target_url, "SELECT version_num FROM alembic_version") == "0002"
+    assert _query_scalar(target_url, "SELECT to_regclass('public.settings')") is None
 
     command.upgrade(config, "head")
     assert _schema_snapshot(target_url) == snapshot
 
     command.downgrade(config, "base")
     assert _query_scalar(target_url, "SELECT count(*) FROM alembic_version") == 0
+    for table in DOMAIN_TABLES:
+        assert _query_scalar(target_url, f"SELECT to_regclass('public.{table}')") is None
     assert _query_scalar(target_url, "SELECT postgis_version()")
 
     command.upgrade(config, "head")
-    assert _query_scalar(target_url, "SELECT version_num FROM alembic_version") == "0002"
+    assert _query_scalar(target_url, "SELECT version_num FROM alembic_version") == "0003"
     assert _query_scalar(target_url, "SELECT postgis_version()")
     assert _schema_snapshot(target_url) == snapshot
 

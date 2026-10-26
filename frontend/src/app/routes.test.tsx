@@ -30,9 +30,11 @@ describe("AppRoutes", () => {
     ["/routes/42", "Route"],
     ["/caches/GC1ABC", "Cache"],
     ["/settings", "Settings"],
-  ])("renders the %s placeholder with its title", (path, title) => {
+  ])("renders the %s page with its title", async (path, title) => {
     renderAt(path);
-    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe(title);
+    expect((await screen.findByRole("heading", { level: 1 })).textContent).toBe(
+      title,
+    );
   });
 
   it("renders the map page with the health indicator", async () => {

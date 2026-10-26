@@ -177,7 +177,7 @@ IDs are stable. Tickets reference them.
 | `ImportRun` | `id`, `started_at`, `finished_at`, `source`, `filenames`, `created`, `updated`, `unchanged`, `waypoints`, `errors` (jsonb entries with severity and parse context) |
 | `Route` | `id`, `name`, `profile`, `geometry` (LineStringZ 4326, nullable until computed), `distance_m`, `ascent_m`, `descent_m`, `computed_at`, `created_at`, `updated_at` |
 | `RouteWaypoint` | `id`, `route_id`, `position`, `location`, `label`, `cache_gc_code` (nullable) |
-| `Settings` | singleton: `home_location`, `avg_speed_kmh`, `corridor_m_default`, `tile_url` override |
+| `Settings` | singleton: `home_location`, `avg_speed_kmh`, `corridor_m_default`, `default_profile`, nullable `tile_url` override, `tile_attribution` |
 
 `source_hash` is a deterministic domain hash over canonical source fields, waypoints, and logs; it excludes user data and persistence timestamps.
 `ImportRun.errors` contains records with `severity`, `file`, optional `gc_code` and `line`, `code`, and human-readable `message`. Warnings use `severity: "warning"` and are presented separately from errors.

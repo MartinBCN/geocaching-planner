@@ -1,6 +1,6 @@
 # T-009: Settings (home location, defaults)
 
-- **Status:** Ready
+- **Status:** Complete
 - **Milestone:** M1
 - **Depends on:** T-006
 - **Requirements:** CAC-6, RTE-4 (avg speed), CAR-1 (default corridor), MAP-1 (tile URL)
@@ -16,9 +16,9 @@ The user can set a home location and app defaults, which are persisted and used 
 - Frontend `/settings` page: a form, with the home location entered as lat/lon (a map picker is added in T-011). Use `react-hook-form` + `zod`, or simple controlled inputs. Do not add a new dependency without noting it in the completion notes.
 
 ## Acceptance criteria
-- [ ] AC1: GET returns defaults on a fresh DB.
-- [ ] AC2: PUT with valid data persists it. Invalid data returns 422 problem+json.
-- [ ] AC3: The UI loads, edits, and saves the settings, and shows validation errors.
+- [x] AC1: GET returns defaults on a fresh DB.
+- [x] AC2: PUT with valid data persists it. Invalid data returns 422 problem+json.
+- [x] AC3: The UI loads, edits, and saves the settings, and shows validation errors.
 
 ## Test plan
 | AC | Level | Test |
@@ -27,10 +27,14 @@ The user can set a home location and app defaults, which are persisted and used 
 | AC3 | component | `src/features/settings/SettingsPage.test.tsx` |
 
 ## Definition of Done
-- [ ] All ACs are covered
-- [ ] `mise run check` is green
-- [ ] `.env.example` documents `GCP_TILE_URL`
-- [ ] Completion notes are filled in and the file is moved to `docs/features/complete/`
+- [x] All ACs are covered
+- [x] `mise run check` is green
+- [x] `.env.example` documents `GCP_TILE_URL`
+- [x] Completion notes are filled in and the file is moved to `docs/features/complete/`
 
 ## Completion notes
-_…_
+- Added a singleton `settings` table in migration `0003` with a tested downgrade, and persisted home coordinates, cycling defaults, tile URL override, and attribution.
+- Added `GET/PUT /api/v1/settings`, with RFC 9457 validation errors and configured CyclOSM URL/attribution defaults.
+- Replaced the Settings placeholder with an accessible form that loads, validates, saves, and reports errors using the generated API client.
+- Documented `GCP_TILE_URL` in `.env.example` and the settings model in specification §7.
+- `mise run api:gen` and `mise run check` pass; the settings API, migration round-trip, and frontend form are covered by automated tests.
