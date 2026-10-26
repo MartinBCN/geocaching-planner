@@ -163,6 +163,22 @@ class UserCacheData:
     corrected_location: Coordinates | None = None
 
 
+class UnsetField(StrEnum):
+    UNSET = "unset"
+
+
+@dataclass(frozen=True, kw_only=True)
+class UserCacheDataUpdate:
+    """Partial update: UnsetField.UNSET retains a value; None clears nullable data."""
+
+    note: str | UnsetField | None = UnsetField.UNSET
+    corrected_location: Coordinates | UnsetField | None = UnsetField.UNSET
+
+    def __post_init__(self) -> None:
+        if self.note is UnsetField.UNSET and self.corrected_location is UnsetField.UNSET:
+            raise ValueError("At least one user-data field must be provided")
+
+
 @dataclass(frozen=True, kw_only=True)
 class ImportIssue:
     severity: Literal["warning", "error"]
