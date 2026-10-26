@@ -101,6 +101,10 @@ def test_non_gpx_and_zip_without_gpx_return_file_error() -> None:
             [
                 _source("plain.gpx", b"this is not XML"),
                 _source("xml-not-gpx.gpx", b"<not-gpx />"),
+                _source(
+                    "wrapped-gpx.gpx",
+                    b'<wrapper><gpx xmlns="http://www.topografix.com/GPX/1/0" /></wrapper>',
+                ),
                 _source("corrupt.zip", b"PK\x03\x04broken"),
                 _source("empty.zip", _zip_file({"readme.txt": b"not GPX"})),
                 _source("not_gpx.txt"),
@@ -108,7 +112,7 @@ def test_non_gpx_and_zip_without_gpx_return_file_error() -> None:
         ).iter_caches()
     )
 
-    assert len(results) == 5
+    assert len(results) == 6
     assert all(isinstance(result, ParseError) for result in results)
     assert all(result.issue.gc_code is None for result in results if isinstance(result, ParseError))
 
@@ -136,6 +140,23 @@ def test_unicode_html_description_is_decoded_and_flagged() -> None:
     )
     assert parsed.cache.long_description == expected
     assert parsed.cache.description_is_html is True
+
+
+def test_description_text_preserves_nested_content_and_empty_fields() -> None:
+    content = (FIXTURES / "unicode_html.gpx").read_bytes()
+    start = content.index(b"<groundspeak:long_description")
+    end = content.index(b"</groundspeak:long_description>", start)
+    content = (
+        content[:start]
+        + b"<groundspeak:short_description />"
+        + b'<groundspeak:long_description html="True">Before <b>nested</b> after'
+        + content[end:]
+    )
+
+    cache = _one_cache(_source("nested-description.gpx", content)).cache
+
+    assert cache.short_description == ""
+    assert cache.long_description == "Before nested after"
 
 
 def test_cache_status_mapping() -> None:

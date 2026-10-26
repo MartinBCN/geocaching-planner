@@ -17,10 +17,12 @@ def test_large_pq_time_and_memory() -> None:
     tracemalloc.start()
     started = time.perf_counter()
     parsed_count = 0
+    log_count = 0
     error_count = 0
     for result in source.iter_caches():
         if isinstance(result, ParsedCache):
             parsed_count += 1
+            log_count += len(result.cache.logs)
         elif isinstance(result, ParseError):
             error_count += 1
     elapsed = time.perf_counter() - started
@@ -28,6 +30,7 @@ def test_large_pq_time_and_memory() -> None:
     tracemalloc.stop()
 
     assert parsed_count == 5000
+    assert log_count == 20000
     assert error_count == 0
     assert elapsed < 5
     assert peak_bytes < 200 * 1024 * 1024

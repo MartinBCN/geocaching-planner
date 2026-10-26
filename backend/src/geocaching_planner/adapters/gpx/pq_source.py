@@ -197,13 +197,15 @@ class PocketQuerySource:
                             )
                             continue
                         cache_codes.add(cache.gc_code)
-                        attached_waypoints = (
-                            tuple(record.value for record in indexed.get(cache.gc_code, ()))
-                            if waypoint_data_supplied
-                            else None
-                        )
+                        if waypoint_data_supplied:
+                            cache = replace(
+                                cache,
+                                waypoints=tuple(
+                                    record.value for record in indexed.get(cache.gc_code, ())
+                                ),
+                            )
                         yield ParsedCache(
-                            cache=replace(cache, waypoints=attached_waypoints),
+                            cache=cache,
                             warnings=warnings,
                         )
                 except _GpxReadError as exc:
@@ -353,6 +355,7 @@ class PocketQuerySource:
                 parser = etree.iterparse(
                     _DeclarationRejectingStream(stream),
                     events=("start", "end"),
+                    tag=("{*}gpx", "{*}wpt"),
                     resolve_entities=False,
                     no_network=True,
                     load_dtd=False,
@@ -363,22 +366,15 @@ class PocketQuerySource:
                 root_seen = False
                 for event, element in parser:
                     if not root_seen:
-                        if event != "start":
-                            continue
                         root_seen = True
-                        root = etree.QName(element)
-                        if root.localname != "gpx" or root.namespace not in _GPX_NAMESPACES:
-                            raise _GpxReadError(
-                                "not_gpx", "XML root is not a supported GPX 1.0 or 1.1 document."
-                            )
-                        continue
-                    if event != "end":
-                        continue
-                    if _local_name(element) != "wpt":
+                        _validate_root(element.getroottree().getroot())
+                    if event != "end" or _local_name(element) != "wpt":
                         continue
                     line = element.sourceline
                     yield element, line
                     _clear_element(element)
+                if not root_seen:
+                    _validate_root(parser.root)
         except _ForbiddenXmlDeclarationError as exc:
             raise _GpxReadError(
                 "xml_entities_rejected", "XML entity declarations are not allowed."
@@ -439,14 +435,23 @@ def _local_name(element: etree._Element) -> str:
     return etree.QName(element).localname
 
 
+def _validate_root(element: etree._Element) -> None:
+    root = etree.QName(element)
+    if root.localname != "gpx" or root.namespace not in _GPX_NAMESPACES:
+        raise _GpxReadError("not_gpx", "XML root is not a supported GPX 1.0 or 1.1 document.")
+
+
 def _text(element: etree._Element, name: str, default: str = "") -> str:
-    for child in element:
-        if _local_name(child) == name:
-            return _joined_text(child).strip()
-    return default
+    child = _child(element, name)
+    return default if child is None else _joined_text(child).strip()
 
 
 def _joined_text(element: etree._Element) -> str:
+    if len(element) == 0:
+        value = element.text
+        if isinstance(value, bytes):
+            return value.decode("utf-8")
+        return value or ""
     return "".join(
         value.decode("utf-8", errors="replace") if isinstance(value, bytes) else value
         for value in element.itertext()
@@ -454,7 +459,7 @@ def _joined_text(element: etree._Element) -> str:
 
 
 def _child(element: etree._Element, name: str) -> etree._Element | None:
-    return next((child for child in element if _local_name(child) == name), None)
+    return element.find(f"{{*}}{name}")
 
 
 def _cache_extension(wpt: etree._Element) -> etree._Element | None:
@@ -615,9 +620,7 @@ def _parse_waypoint(element: etree._Element) -> CacheWaypoint | None:
 
 
 def _descendants(element: etree._Element, name: str) -> Iterator[etree._Element]:
-    return (
-        child for child in element.iter() if child is not element and _local_name(child) == name
-    )
+    return element.iterdescendants(f"{{*}}{name}")
 
 
 def _parse_optional_date(value: str | None) -> datetime | None:
