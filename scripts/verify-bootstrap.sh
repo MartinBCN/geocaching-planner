@@ -12,7 +12,7 @@ TMP_DIRS=()
 trap 'rm -rf ${TMP_DIRS[@]+"${TMP_DIRS[@]}"}' EXIT
 
 STUB_TASKS=()
-REQUIRED_TASKS=(setup ci:setup:backend ci:setup:frontend ci:setup:e2e build:frontend test:e2e:ci dev check lint fmt test test:bootstrap test:backend test:frontend test:e2e db:migrate db:revision test:compose:db test:compose:dev api:gen api:check brouter:segments check:pre-commit lint:backend fmt:backend typecheck:backend check:backend lint:frontend fmt:frontend typecheck:frontend check:frontend verify:python:314)
+REQUIRED_TASKS=(setup ci:setup:backend ci:setup:frontend dev check lint fmt test test:bootstrap test:backend test:frontend test:e2e db:migrate db:revision test:compose:db test:compose:dev api:gen api:check brouter:segments check:pre-commit lint:backend fmt:backend typecheck:backend check:backend lint:frontend fmt:frontend typecheck:frontend check:frontend verify:python:314)
 
 fail() { echo "FAIL: $*" >&2; exit 1; }
 pass() { echo "PASS: $1"; }

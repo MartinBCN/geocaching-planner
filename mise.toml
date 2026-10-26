@@ -32,20 +32,6 @@ run = "uv sync --locked --project backend"
 description = "Install locked frontend dependencies for CI"
 run = "pnpm --dir frontend install --frozen-lockfile"
 
-[tasks."ci:setup:e2e"]
-description = "Install backend, frontend, and Chromium dependencies for E2E CI"
-depends = ["ci:setup:backend", "ci:setup:frontend"]
-run = "pnpm --dir frontend exec playwright install --with-deps chromium"
-
-[tasks."build:frontend"]
-description = "Build the production frontend"
-dir = "frontend"
-run = "pnpm build"
-
-[tasks."test:e2e:ci"]
-description = "Run E2E smoke tests against a DB-only CI stack"
-run = "bash scripts/test-e2e-ci.sh"
-
 [tasks."check:pre-commit"]
 description = "Run all pre-commit hooks against every file (fails on any hook failure)"
 run = "uvx pre-commit@4.7.0 run --all-files"

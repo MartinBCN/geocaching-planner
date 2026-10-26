@@ -15,7 +15,6 @@ def test_ci_uses_mise_tasks_and_declared_jobs() -> None:
     expected_jobs = {
         "backend": "mise run check:backend",
         "frontend": "mise run check:frontend",
-        "e2e": "mise run test:e2e:ci",
         "pre-commit": "mise run check:pre-commit",
     }
 
@@ -51,7 +50,10 @@ def test_ci_uses_mise_tasks_and_declared_jobs() -> None:
         for step in job["steps"]
         if "actions/upload-artifact@" in step.get("uses", "")
     }
-    assert artifact_names == {"backend-coverage", "frontend-coverage", "e2e-report"}
+    assert artifact_names == {"backend-coverage", "frontend-coverage"}
+    assert "e2e" not in workflow["jobs"]
+    mise = tomllib.loads((REPO_ROOT / "mise.toml").read_text(encoding="utf-8"))
+    assert mise["tasks"]["test:e2e"]["run"] == "pnpm e2e"
 
     workflow_text = WORKFLOW_PATH.read_text(encoding="utf-8")
     assert not re.search(
@@ -93,21 +95,6 @@ def test_quality_gate_tasks_enforce_lint_and_coverage_thresholds() -> None:
     assert mise["tasks"]["test:frontend"]["run"] == "pnpm test:coverage"
 
 
-def test_e2e_ci_starts_db_only_and_checks_backend_health() -> None:
-    """The CI smoke path must avoid BRouter and exercise the production preview build."""
-    script = (REPO_ROOT / "scripts" / "test-e2e-ci.sh").read_text(encoding="utf-8")
-
-    assert "docker compose up -d --wait db" in script
-    assert "brouter" not in script.lower()
-    assert "mise run db:migrate" in script
-    assert "GCP_HOST=127.0.0.1" in script
-    assert "GCP_PORT=8000" in script
-    assert "mise run build:frontend" in script
-    assert "--port 5173 --strictPort" in script
-    assert "E2E_BASE_URL:-http://localhost:5173" in script
-    assert "mise exec -- pnpm --dir frontend exec playwright test" in script
-
-
 def test_readme_required_checks_match_workflow() -> None:
     """AC6: README lists all required status-check names in Development / CI."""
     readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
@@ -116,4 +103,5 @@ def test_readme_required_checks_match_workflow() -> None:
 
     for job_id in workflow["jobs"]:
         assert f"`{job_id}`" in section
+    assert "E2E is available locally with `mise run test:e2e`" in section
     assert "actions/workflows/ci.yml/badge.svg" in readme
