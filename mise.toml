@@ -36,6 +36,10 @@ run = "pnpm --dir frontend install --frozen-lockfile"
 description = "Run all pre-commit hooks against every file (fails on any hook failure)"
 run = "uvx pre-commit@4.7.0 run --all-files"
 
+[tasks."ci:lint:workflows"]
+description = "CI-only actionlint check; not installed by local setup"
+run = "uvx pre-commit@4.7.0 run --config .github/actionlint.pre-commit-config.yaml --all-files"
+
 [tasks.fmt]
 description = "Run the fixing hooks and backend formatter across the repository"
 depends = ["fmt:backend", "fmt:frontend"]
@@ -50,7 +54,7 @@ description = "Lint: pre-commit hooks, bootstrap checks, and backend lint"
 depends = ["check:pre-commit", "test:bootstrap", "lint:backend", "lint:frontend"]
 
 [tasks.check]
-description = "All quality gates (same set as CI). Must never call a not-yet-implemented task."
+description = "All local quality gates (CI additionally runs actionlint)."
 depends = ["check:pre-commit", "test:bootstrap", "check:backend", "check:frontend"]
 
 [tasks.dev]

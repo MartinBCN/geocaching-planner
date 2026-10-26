@@ -6,6 +6,7 @@ from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
+from geocaching_planner.adapters.db import models  # noqa: F401 - register ORM tables in metadata
 from geocaching_planner.adapters.db.base import Base
 from geocaching_planner.config import AppConfig
 

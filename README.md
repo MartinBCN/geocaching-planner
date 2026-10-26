@@ -26,6 +26,8 @@ Requirements: [mise](https://mise.jdx.dev) and Docker.
 ## Development / CI
 Before merging, require the `backend`, `frontend`, and `pre-commit` GitHub Actions checks. Playwright E2E is available locally with `mise run test:e2e` and is not run on GitHub-hosted runners.
 
+Local setup and `mise run check` do not install or run actionlint. GitHub runs the pinned actionlint hook separately via `mise run ci:lint:workflows` in the required `pre-commit` job.
+
 ## Local services and data
 The PostGIS database uses a named Docker volume (`db-data`). Stopping the stack normally preserves your data, so `docker compose stop` and `docker compose start` keep it. **`docker compose down -v` deletes the database volume and its data.**
 

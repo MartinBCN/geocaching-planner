@@ -77,6 +77,29 @@ def test_check_frontend_fails_on_generated_schema_drift() -> None:
     assert "API schema out of date: run mise run api:gen" in schema_script
 
 
+def test_actionlint_is_ci_only() -> None:
+    local = yaml.safe_load((REPO_ROOT / ".pre-commit-config.yaml").read_text(encoding="utf-8"))
+    ci = yaml.safe_load(
+        (REPO_ROOT / ".github/actionlint.pre-commit-config.yaml").read_text(encoding="utf-8")
+    )
+    assert all(hook["id"] != "actionlint" for repo in local["repos"] for hook in repo["hooks"])
+    assert ci["repos"] == [
+        {
+            "repo": "https://github.com/rhysd/actionlint",
+            "rev": "v1.7.7",
+            "hooks": [{"id": "actionlint"}],
+        }
+    ]
+    mise = tomllib.loads((REPO_ROOT / "mise.toml").read_text(encoding="utf-8"))
+    task = mise["tasks"]["ci:lint:workflows"]
+    assert task["run"] == (
+        "uvx pre-commit@4.7.0 run --config .github/actionlint.pre-commit-config.yaml --all-files"
+    )
+    assert "ci:lint:workflows" not in mise["tasks"]["check"]["depends"]
+    workflow = yaml.safe_load(WORKFLOW_PATH.read_text(encoding="utf-8"))
+    assert {"run": "mise run ci:lint:workflows"} in workflow["jobs"]["pre-commit"]["steps"]
+
+
 def test_quality_gate_tasks_enforce_lint_and_coverage_thresholds() -> None:
     """AC1-AC3: CI invokes local gates that enforce the declared lint and coverage levels."""
     backend = tomllib.loads((REPO_ROOT / "backend" / "pyproject.toml").read_text(encoding="utf-8"))

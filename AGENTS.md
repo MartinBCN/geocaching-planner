@@ -43,7 +43,7 @@ Found something out of scope? Add a new ticket to `backlog/` (from the template,
 |---|---|
 | Install everything | `mise install && mise run setup` |
 | Start the dev stack (compose + backend + frontend) | `mise run dev` |
-| All quality gates (same as CI) | `mise run check` |
+| All local quality gates (CI additionally runs actionlint) | `mise run check` |
 | Lint / format | `mise run lint` / `mise run fmt` |
 | Backend tests | `mise run test:backend` |
 | Frontend tests | `mise run test:frontend` |
