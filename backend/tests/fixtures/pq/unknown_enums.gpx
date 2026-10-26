@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx xmlns="http://www.topografix.com/GPX/1/1" xmlns:groundspeak="http://www.groundspeak.com/cache/1/0/1" version="1.1" creator="synthetic-fixture">
+<wpt lat="52.1" lon="4.3"><name>GC9999Z</name><sym>Geocache</sym><extensions><groundspeak:cache id="9999" available="True" archived="False"><groundspeak:name>Unknown values</groundspeak:name><groundspeak:type>Imaginary Cache</groundspeak:type><groundspeak:container>Jumbo</groundspeak:container><groundspeak:difficulty>2</groundspeak:difficulty><groundspeak:terrain>2</groundspeak:terrain><groundspeak:owner>Owner</groundspeak:owner><groundspeak:logs><groundspeak:log id="999"><groundspeak:date>2025-01-01T00:00:00Z</groundspeak:date><groundspeak:type>Imaginary log</groundspeak:type><groundspeak:finder>Synthetic finder</groundspeak:finder><groundspeak:text>Unknown log type</groundspeak:text></groundspeak:log></groundspeak:logs></groundspeak:cache></extensions></wpt>
+</gpx>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx xmlns="http://www.topografix.com/GPX/1/1" xmlns:groundspeak="http://www.groundspeak.com/cache/1/0/1" version="1.1" creator="synthetic-fixture">
+<wpt lat="52.1" lon="4.3">
+<time>2026-01-01T12:00:00Z</time>
+<time>2026-01-01T12:00:00Z</time>
+<name>GC1234X</name>
+<desc html="True">&lt;p&gt;Cache description&lt;/p&gt;</desc>
+<sym>Geocache</sym>
+<extensions><groundspeak:cache id="1234" available="True" archived="False">
+<groundspeak:name>All fields cache</groundspeak:name>
+<groundspeak:placed_by date="2024-05-06">Synthetic placer</groundspeak:placed_by>
+<groundspeak:owner id="99">Synthetic owner</groundspeak:owner>
+<groundspeak:type>Multi-cache</groundspeak:type><groundspeak:container>Regular</groundspeak:container>
+<groundspeak:difficulty>3.5</groundspeak:difficulty><groundspeak:terrain>4</groundspeak:terrain>
+<groundspeak:country>Netherlands</groundspeak:country><groundspeak:state>Utrecht</groundspeak:state>
+<groundspeak:short_description html="False">Short description</groundspeak:short_description>
+<groundspeak:long_description html="True">&lt;p&gt;Long description&lt;/p&gt;</groundspeak:long_description>
+<groundspeak:encoded_hints>ROT13 hint</groundspeak:encoded_hints>
+<groundspeak:attributes>
+<groundspeak:attribute id="13" inc="1">Bicycles</groundspeak:attribute>
+<groundspeak:attribute id="2" inc="0">Dogs</groundspeak:attribute>
+</groundspeak:attributes>
+<groundspeak:logs><groundspeak:log id="20"><groundspeak:date>2025-01-03T10:00:00Z</groundspeak:date>
+<groundspeak:type>Write note</groundspeak:type><groundspeak:finder>Finder B</groundspeak:finder>
+<groundspeak:text>Second log</groundspeak:text></groundspeak:log>
+<groundspeak:log id="10"><groundspeak:date>2025-01-02T10:00:00Z</groundspeak:date>
+<groundspeak:type>Found it</groundspeak:type><groundspeak:finder>Finder A</groundspeak:finder>
+<groundspeak:text>First log</groundspeak:text></groundspeak:log></groundspeak:logs>
+</groundspeak:cache></extensions></wpt>
+</gpx>

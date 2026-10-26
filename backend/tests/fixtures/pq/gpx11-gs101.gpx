@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx xmlns="http://www.topografix.com/GPX/1/1" xmlns:gs="http://www.groundspeak.com/cache/1/0/1" version="1.1" creator="synthetic-fixture">
+<wpt lat="52.1" lon="4.3">
+<time>2026-01-01T12:00:00Z</time>
+<name>GC0001A</name>
+<desc html="True">&lt;p&gt;Synthetic cache&lt;/p&gt;</desc>
+<sym>Geocache</sym>
+<extensions><gs:cache id="1" available="True" archived="False">
+<gs:name>Synthetic cache</gs:name><gs:placed_by date="2025-01-02">Synthetic placer</gs:placed_by>
+<gs:owner id="1">Synthetic owner</gs:owner><gs:type>Traditional Cache</gs:type>
+<gs:container>Small</gs:container><gs:difficulty>1.5</gs:difficulty>
+<gs:terrain>2</gs:terrain><gs:country>Netherlands</gs:country>
+<gs:state>North Holland</gs:state><gs:short_description html="False">Short</gs:short_description>
+<gs:long_description html="True">Description</gs:long_description><gs:encoded_hints>Hint</gs:encoded_hints>
+<gs:attributes><gs:attribute id="1" inc="1">Bicycles</gs:attribute></gs:attributes>
+<gs:logs><gs:log id="10"><gs:date>2026-01-01T11:00:00Z</gs:date>
+<gs:type>Found it</gs:type><gs:finder>Synthetic finder</gs:finder>
+<gs:text>Log text</gs:text></gs:log></gs:logs>
+</gs:cache></extensions></wpt>
+</gpx>
