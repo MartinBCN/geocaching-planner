@@ -10,6 +10,13 @@ from geocaching_planner.domain.cache import (
     UserCacheData,
     UserCacheDataUpdate,
 )
+from geocaching_planner.domain.cache_filter import (
+    CacheFilter,
+    CacheMarkers,
+    CachePage,
+    CachePageRequest,
+    CacheSort,
+)
 from geocaching_planner.domain.errors import NotFoundError
 from geocaching_planner.services.ports import UpsertResult
 
@@ -75,6 +82,14 @@ class FakeCacheRepository:
             return None
         logs = tuple(log for log in self._logs.values() if log.cache_gc_code == gc_code)
         return replace(cache, logs=logs)
+
+    async def query(
+        self, cache_filter: CacheFilter, sort: CacheSort, page: CachePageRequest
+    ) -> CachePage:
+        raise NotImplementedError("Cache query behavior is covered by the PostGIS adapter.")
+
+    async def markers(self, cache_filter: CacheFilter, cap: int) -> CacheMarkers:
+        raise NotImplementedError("Cache marker behavior is covered by the PostGIS adapter.")
 
     async def get_user_data(self, gc_code: str) -> UserCacheData | None:
         return self._user_data.get(gc_code)

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from geoalchemy2 import Geography
+from geoalchemy2 import Geography, Geometry
 from geoalchemy2.elements import WKBElement, WKTElement
 from sqlalchemy import (
     BigInteger,
@@ -160,3 +160,15 @@ class SettingsModel(Base):
         default="© OpenStreetMap contributors, CyclOSM",
         server_default="© OpenStreetMap contributors, CyclOSM",
     )
+
+
+Index(
+    "ix_caches_location_geometry_gist",
+    CacheModel.location.cast(Geometry()),
+    postgresql_using="gist",
+)
+Index(
+    "ix_user_cache_data_corrected_geometry_gist",
+    UserCacheDataModel.corrected_location.cast(Geometry()),
+    postgresql_using="gist",
+)

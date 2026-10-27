@@ -15,3 +15,7 @@ class ConflictError(DomainError):
 
 class UpstreamUnavailableError(DomainError):
     """An external dependency is unavailable."""
+
+
+class HomeLocationRequiredError(DomainError):
+    """A distance-based cache query needs a configured home location."""

@@ -4,6 +4,40 @@
  */
 
 export interface paths {
+    "/api/v1/caches": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Caches */
+        get: operations["list_caches_api_v1_caches_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/caches/markers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Cache Markers */
+        get: operations["get_cache_markers_api_v1_caches_markers_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/health": {
         parameters: {
             query?: never;
@@ -66,6 +100,76 @@ export interface components {
             /** Files */
             files: string[];
         };
+        /** CacheMarkersResponse */
+        CacheMarkersResponse: {
+            /** Items */
+            items: [
+                string,
+                string,
+                number,
+                number,
+                string,
+                string,
+                number,
+                number,
+                boolean,
+                boolean,
+                boolean,
+                boolean
+            ][];
+            /** Total */
+            total: number;
+            /** Truncated */
+            truncated: boolean;
+        };
+        /** CachePageResponse */
+        CachePageResponse: {
+            /** Items */
+            items: components["schemas"]["CacheSummaryResponse"][];
+            /** Total */
+            total: number;
+        };
+        /** CacheSummaryResponse */
+        CacheSummaryResponse: {
+            /** Container */
+            container: string;
+            /** Difficulty */
+            difficulty: number;
+            /** Distance Km */
+            distance_km: number | null;
+            /** Found By Me */
+            found_by_me: boolean;
+            /** Gc Code */
+            gc_code: string;
+            /** Has Corrected */
+            has_corrected: boolean;
+            /** Is Archived */
+            is_archived: boolean;
+            /** Is Available */
+            is_available: boolean;
+            /** Lat */
+            lat: number;
+            /** Lon */
+            lon: number;
+            /** Name */
+            name: string;
+            /** Placed At */
+            placed_at: string | null;
+            /** Terrain */
+            terrain: number;
+            /** Type */
+            type: string;
+        };
+        /**
+         * CacheType
+         * @enum {string}
+         */
+        CacheType: "Traditional" | "Multi" | "Mystery" | "Letterbox" | "EarthCache" | "Wherigo" | "Virtual" | "Event" | "CITO" | "Mega" | "Giga" | "Webcam" | "Lab" | "Other";
+        /**
+         * ContainerSize
+         * @enum {string}
+         */
+        ContainerSize: "Micro" | "Small" | "Regular" | "Large" | "Virtual" | "Other" | "Not chosen";
         /** CoordinatesModel */
         CoordinatesModel: {
             /** Lat */
@@ -204,6 +308,147 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    list_caches_api_v1_caches_get: {
+        parameters: {
+            query?: {
+                sort?: "name" | "-name" | "gc_code" | "-gc_code" | "difficulty" | "-difficulty" | "terrain" | "-terrain" | "distance" | "-distance" | "placed_at" | "-placed_at";
+                page?: number;
+                page_size?: number;
+                types?: components["schemas"]["CacheType"][] | null;
+                containers?: components["schemas"]["ContainerSize"][] | null;
+                difficulty_min?: number | null;
+                difficulty_max?: number | null;
+                terrain_min?: number | null;
+                terrain_max?: number | null;
+                found?: boolean | null;
+                include_archived?: boolean;
+                include_disabled?: boolean;
+                max_distance_km?: number | null;
+                bbox?: string | null;
+                text?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CachePageResponse"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Method not allowed */
+            405: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    get_cache_markers_api_v1_caches_markers_get: {
+        parameters: {
+            query: {
+                bbox: string;
+                types?: components["schemas"]["CacheType"][] | null;
+                containers?: components["schemas"]["ContainerSize"][] | null;
+                difficulty_min?: number | null;
+                difficulty_max?: number | null;
+                terrain_min?: number | null;
+                terrain_max?: number | null;
+                found?: boolean | null;
+                include_archived?: boolean;
+                include_disabled?: boolean;
+                max_distance_km?: number | null;
+                text?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CacheMarkersResponse"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Method not allowed */
+            405: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
     health_api_v1_health_get: {
         parameters: {
             query?: never;

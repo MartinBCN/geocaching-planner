@@ -5,6 +5,13 @@ from dataclasses import dataclass
 from typing import BinaryIO, Literal, Protocol
 
 from geocaching_planner.domain.cache import Cache, ImportRun, UserCacheData, UserCacheDataUpdate
+from geocaching_planner.domain.cache_filter import (
+    CacheFilter,
+    CacheMarkers,
+    CachePage,
+    CachePageRequest,
+    CacheSort,
+)
 from geocaching_planner.domain.settings import PlannerSettings
 
 
@@ -20,6 +27,12 @@ class CacheRepository(Protocol):
     async def upsert_many(self, caches: Sequence[Cache]) -> UpsertResult: ...
 
     async def get(self, gc_code: str) -> Cache | None: ...
+
+    async def query(
+        self, cache_filter: CacheFilter, sort: CacheSort, page: CachePageRequest
+    ) -> CachePage: ...
+
+    async def markers(self, cache_filter: CacheFilter, cap: int) -> CacheMarkers: ...
 
     async def get_user_data(self, gc_code: str) -> UserCacheData | None: ...
 

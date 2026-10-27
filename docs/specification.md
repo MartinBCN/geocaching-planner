@@ -191,8 +191,8 @@ The **effective location** of a cache is `coalesce(user.corrected_location, cach
 | GET | `/health` | Liveness, plus DB and BRouter status |
 | POST | `/imports` | multipart upload → `ImportRun` summary |
 | GET | `/imports` | import history |
-| GET | `/caches` | list with filters, `bbox`, paging, sort |
-| GET | `/caches/markers` | viewport marker tuples with required bbox, filters, truncation flag, and total |
+| GET | `/caches` | filtered cache summaries with `bbox`, paging, and sorting |
+| GET | `/caches/markers` | filtered viewport marker tuples with required bbox, truncation flag, and total |
 | GET | `/caches/{gc}` | details incl. waypoints, logs, user data |
 | PUT | `/caches/{gc}/user-data` | note and corrected coordinates |
 | GET | `/caches/export.gpx` | export with the same filters as the list |
@@ -204,6 +204,8 @@ The **effective location** of a cache is `coalesce(user.corrected_location, cach
 | GET | `/routes/{id}/export.gpx` | track plus optional caches (`include=gc1,gc2`) |
 
 The OpenAPI schema is the contract. The frontend client is generated from it (`openapi-typescript` + `openapi-fetch`).
+
+`GET /caches/markers` requires `bbox=minLon,minLat,maxLon,maxLat` and accepts the same cache filters as the list endpoint. Its response is `{items, truncated, total}`; each item is a fixed tuple `[gc_code, name, lat, lon, type, container, difficulty, terrain, found_by_me, is_available, is_archived, has_corrected]`, with coordinates taken from the effective location (corrected coordinates when present). Results are ordered by GC code and capped at `MARKER_CAP` (default 20,000). If more matches exist, exactly the cap is returned, `truncated` is `true`, and `total` reports the number of matches before truncation.
 
 Import uploads accept multiple named `.gpx` and `.zip` files in one request. The API validates every file before importing any of them, limits each compressed input to `IMPORT_MAX_FILE_MB` (default 50 MB), and caps expanded archive content at 500 MB. Uploads are staged under generated temporary names and removed after success or failure. Parsing is synchronous from the user's perspective, runs off the event loop, and returns one history record for the whole request.
 
