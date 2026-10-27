@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { api } from "../../api/client";
 import type { components } from "../../api/schema";
+import { MapView } from "../map/MapView";
 
 type SettingsResponse = components["schemas"]["SettingsResponse"];
 type SettingsPayload = components["schemas"]["SettingsPayload"];
@@ -88,6 +89,7 @@ export function SettingsPage() {
   const [form, setForm] = useState<SettingsForm | null>(null);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [saved, setSaved] = useState(false);
+  const [showHomePicker, setShowHomePicker] = useState(false);
 
   useEffect(() => {
     if (settingsQuery.data) {
@@ -167,6 +169,35 @@ export function SettingsPage() {
         <fieldset>
           <legend>Home location</legend>
           <p>Leave both coordinates blank to clear your home location.</p>
+          <button
+            type="button"
+            aria-expanded={showHomePicker}
+            onClick={() => setShowHomePicker((current) => !current)}
+          >
+            {showHomePicker ? "Hide map picker" : "Pick home location on map"}
+          </button>
+          {showHomePicker && (
+            <MapView
+              className="home-location-map"
+              homeLocation={
+                form.homeLatitude.trim() !== "" &&
+                form.homeLongitude.trim() !== "" &&
+                Number.isFinite(Number(form.homeLatitude)) &&
+                Number.isFinite(Number(form.homeLongitude))
+                  ? {
+                      lat: Number(form.homeLatitude),
+                      lon: Number(form.homeLongitude),
+                    }
+                  : null
+              }
+              tileUrl={form.tileUrl}
+              tileAttribution={form.tileAttribution}
+              onLocationSelect={({ lat, lon }) => {
+                updateField("homeLatitude", lat.toFixed(6));
+                updateField("homeLongitude", lon.toFixed(6));
+              }}
+            />
+          )}
           <div className="settings-coordinate-fields">
             <label>
               Home latitude

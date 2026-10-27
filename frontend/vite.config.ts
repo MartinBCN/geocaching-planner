@@ -12,6 +12,9 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react()],
+    optimizeDeps: {
+      exclude: ["maplibre-gl"],
+    },
     server: {
       // ADR-0002: loopback only. Never bind to 0.0.0.0.
       host: "127.0.0.1",

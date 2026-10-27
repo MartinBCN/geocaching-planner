@@ -51,7 +51,9 @@ describe("AppRoutes", () => {
       ),
     );
     renderAt("/");
-    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Map");
+    expect((await screen.findByRole("heading", { level: 1 })).textContent).toBe(
+      "Map",
+    );
     expect(await screen.findByText("Backend: ok")).toBeTruthy();
   });
 
