@@ -1,6 +1,6 @@
 # T-011: Map view with cache markers
 
-- **Status:** Ready
+- **Status:** Complete
 - **Milestone:** M1
 - **Depends on:** T-010
 - **Requirements:** MAP-1, MAP-2, MAP-3
@@ -22,11 +22,11 @@ The home page shows a full-screen cycle map with clustered cache markers for the
 - Show a banner when `truncated` is true ("Zoom in to see all caches").
 
 ## Acceptance criteria
-- [ ] AC1: After importing a fixture, markers appear at the correct positions (e2e).
-- [ ] AC2: Panning triggers one debounced fetch with the new bbox (component test with a mocked map).
-- [ ] AC3: Clicking a marker shows a popup with the correct cache data.
-- [ ] AC4: Tile attribution is visible.
-- [ ] AC5: Found, disabled, and corrected caches are visually distinguishable (style expression unit test).
+- [x] AC1: After importing a fixture, markers appear at the correct positions (e2e).
+- [x] AC2: Panning triggers one debounced fetch with the new bbox (component test with a mocked map).
+- [x] AC3: Clicking a marker shows a popup with the correct cache data.
+- [x] AC4: Tile attribution is visible.
+- [x] AC5: Found, disabled, and corrected caches are visually distinguishable (style expression unit test).
 
 ## Test plan
 | AC | Level | Test |
@@ -36,9 +36,13 @@ The home page shows a full-screen cycle map with clustered cache markers for the
 | AC5 | unit | `src/features/map/styles.test.ts` |
 
 ## Definition of Done
-- [ ] All ACs are covered
-- [ ] `mise run check` is green
-- [ ] Completion notes are filled in and the file is moved to `docs/features/complete/`
+- [x] All ACs are covered
+- [x] `mise run check` is green
+- [x] Completion notes are filled in and the file is moved to `docs/features/complete/`
 
 ## Completion notes
-_…_
+- Added a full-screen MapLibre raster cycle map with viewport-bounded, debounced marker requests, native clustering, type/status styling, popups, truncation notices, and visible tile attribution.
+- The initial view uses the configured home location, fits returned cache bounds when home is unset, and falls back to the Netherlands when no caches exist. Settings now includes a map picker for home coordinates.
+- Added the ticketed `maplibre-gl` and `react-map-gl` dependencies and excluded MapLibre from Vite dependency optimization so its worker loads correctly.
+- Added component/style tests and `e2e/map.spec.ts` for imported markers, popup details, and attribution.
+- Validation: `mise run check` passed; `mise exec -- pnpm --dir frontend e2e e2e/map.spec.ts` passed.

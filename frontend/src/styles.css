@@ -39,6 +39,77 @@ body,
   padding: 1rem;
 }
 
+.map-page {
+  position: relative;
+  width: calc(100% + 2rem);
+  height: calc(100% + 2rem);
+  margin: -1rem;
+}
+
+.map-view {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 18rem;
+  overflow: hidden;
+}
+
+.map-attribution,
+.map-banner,
+.map-error,
+.map-loading,
+.map-health {
+  position: absolute;
+  z-index: 1;
+  padding: 0.4rem 0.65rem;
+  border-radius: 0.25rem;
+  background: Canvas;
+  color: CanvasText;
+  box-shadow: 0 1px 5px #0004;
+}
+
+.map-attribution {
+  right: 0.5rem;
+  bottom: 0.5rem;
+  font-size: 0.75rem;
+}
+
+.map-banner,
+.map-error,
+.map-loading {
+  top: 0.75rem;
+  left: 0.75rem;
+  margin: 0;
+}
+
+.map-error {
+  top: 3.25rem;
+  color: #b42318;
+}
+
+.map-health {
+  top: 0.75rem;
+  right: 0.75rem;
+}
+
+.home-location-map {
+  height: 22rem;
+  border: 1px solid #8886;
+  border-radius: 0.4rem;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .settings-page {
   max-width: 42rem;
 }

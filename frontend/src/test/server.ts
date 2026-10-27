@@ -17,4 +17,7 @@ export const server = setupServer(
     }),
   ),
   http.get("*/api/v1/imports", () => HttpResponse.json([])),
+  http.get("*/api/v1/caches/markers", () =>
+    HttpResponse.json({ items: [], truncated: false, total: 0 }),
+  ),
 );
