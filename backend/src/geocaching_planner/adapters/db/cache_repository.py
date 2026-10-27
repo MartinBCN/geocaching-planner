@@ -10,6 +10,7 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from geocaching_planner.adapters.db.cache_query import SqlAlchemyCacheQuery
 from geocaching_planner.adapters.db.models import (
     CacheLogModel,
     CacheModel,
@@ -32,6 +33,13 @@ from geocaching_planner.domain.cache import (
     UserCacheData,
     UserCacheDataUpdate,
     WaypointType,
+)
+from geocaching_planner.domain.cache_filter import (
+    CacheFilter,
+    CacheMarkers,
+    CachePage,
+    CachePageRequest,
+    CacheSort,
 )
 from geocaching_planner.domain.errors import NotFoundError
 from geocaching_planner.services.ports import UpsertResult
@@ -107,6 +115,14 @@ class SqlAlchemyCacheRepository:
         )
         row = result.scalar_one_or_none()
         return _cache_from_model(row) if row is not None else None
+
+    async def query(
+        self, cache_filter: CacheFilter, sort: CacheSort, page: CachePageRequest
+    ) -> CachePage:
+        return await SqlAlchemyCacheQuery(self._session).query(cache_filter, sort, page)
+
+    async def markers(self, cache_filter: CacheFilter, cap: int) -> CacheMarkers:
+        return await SqlAlchemyCacheQuery(self._session).markers(cache_filter, cap)
 
     async def get_user_data(self, gc_code: str) -> UserCacheData | None:
         row = await self._session.get(UserCacheDataModel, gc_code)

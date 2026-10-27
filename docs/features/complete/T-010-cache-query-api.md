@@ -1,6 +1,6 @@
 # T-010: Cache query API (filters, bbox, paging)
 
-- **Status:** Ready
+- **Status:** Complete
 - **Milestone:** M1
 - **Depends on:** T-009, T-024
 - **Requirements:** CAC-1, CAC-2, MAP-2 (data side), NFR-1
@@ -26,14 +26,14 @@ Spatial predicates must use separate GiST-indexable branches for original and co
 - UI (T-011, T-012). The detail endpoint (T-013).
 
 ## Acceptance criteria
-- [ ] AC1: Given repeated `types` or `containers`, when filtering, then values within each list are ORed and different filter fields are ANDed. D/T bounds are inclusive; `found=None` means no found filter; `include_disabled=false` means `is_available=true`; `available=false` is presented as disabled. `text=abc` matches `gc_code ILIKE 'abc%' OR name ILIKE '%abc%'`.
-- [ ] AC2: Given a corrected location 10 km from home and its original location 1 km from home, when `max_distance_km=5` is applied, then the cache is excluded; in a separate unfiltered request its `distance_km` is `10.0 ± 0.01` straight-line kilometers.
-- [ ] AC3: Given a cache whose corrected location moves it outside a supplied bbox, when bbox filtering runs, then it is excluded; bbox edges are evaluated in geometry coordinate space.
-- [ ] AC4: Given no paging parameters, then page 1 and page size 50 are used. Given page 2 and size 2, results are stable with `gc_code` tie-break; a page past the end is empty with correct total. Page is 1-based/minimum 1 and page size is 1–500.
-- [ ] AC5: Given `max_distance_km` or `sort=distance` without a home location, when requested, then return 422 problem+json with stable type URI and actionable detail to set a home location. Given no distance filter/sort and no home location, each item's `distance_km` is null.
-- [ ] AC6: Given either caches endpoint is requested without a valid marker bbox where required, with unknown sort, D/T outside 1–5 or not in 0.5 increments, or a minimum greater than its maximum, when requested, then return 422 `application/problem+json`.
-- [ ] AC7: Given the markers endpoint with a bbox and filters, when there are fewer than `MARKER_CAP` matches, then all matching items return in the documented tuple shape with `truncated=false` and exact total; when more matches exist, exactly `MARKER_CAP` deterministic GC-code-ordered items return with `truncated=true` and the total before truncation.
-- [ ] AC8: Given 50,000 synthetic caches (10% corrected) after `ANALYZE`, when the marker API is requested 20 warm times for a 0.5°×0.5° bbox, `types`, and `found=false`, then p95 is under 300 ms and EXPLAIN uses index or bitmap scans on both GiST branches.
+- [x] AC1: Given repeated `types` or `containers`, when filtering, then values within each list are ORed and different filter fields are ANDed. D/T bounds are inclusive; `found=None` means no found filter; `include_disabled=false` means `is_available=true`; `available=false` is presented as disabled. `text=abc` matches `gc_code ILIKE 'abc%' OR name ILIKE '%abc%'`.
+- [x] AC2: Given a corrected location 10 km from home and its original location 1 km from home, when `max_distance_km=5` is applied, then the cache is excluded; in a separate unfiltered request its `distance_km` is `10.0 ± 0.01` straight-line kilometers.
+- [x] AC3: Given a cache whose corrected location moves it outside a supplied bbox, when bbox filtering runs, then it is excluded; bbox edges are evaluated in geometry coordinate space.
+- [x] AC4: Given no paging parameters, then page 1 and page size 50 are used. Given page 2 and size 2, results are stable with `gc_code` tie-break; a page past the end is empty with correct total. Page is 1-based/minimum 1 and page size is 1–500.
+- [x] AC5: Given `max_distance_km` or `sort=distance` without a home location, when requested, then return 422 problem+json with stable type URI and actionable detail to set a home location. Given no distance filter/sort and no home location, each item's `distance_km` is null.
+- [x] AC6: Given either caches endpoint is requested without a valid marker bbox where required, with unknown sort, D/T outside 1–5 or not in 0.5 increments, or a minimum greater than its maximum, when requested, then return 422 `application/problem+json`.
+- [x] AC7: Given the markers endpoint with a bbox and filters, when there are fewer than `MARKER_CAP` matches, then all matching items return in the documented tuple shape with `truncated=false` and exact total; when more matches exist, exactly `MARKER_CAP` deterministic GC-code-ordered items return with `truncated=true` and the total before truncation.
+- [x] AC8: Given 50,000 synthetic caches (10% corrected) after `ANALYZE`, when the marker API is requested 20 warm times for a 0.5°×0.5° bbox, `types`, and `found=false`, then p95 is under 300 ms and EXPLAIN uses index or bitmap scans on both GiST branches.
 
 ## Test plan
 | AC | Level | Test |
@@ -48,12 +48,12 @@ Spatial predicates must use separate GiST-indexable branches for original and co
 | AC8 | integration (slow; runs in CI backend job) | `backend/tests/integration/perf/test_cache_query_perf.py` |
 
 ## Definition of Done
-- [ ] All ACs are covered by automated tests
-- [ ] `mise run check` is green
-- [ ] Docs are updated (README / spec / AGENTS / ADR if needed)
-- [ ] There are no TODOs without a linked backlog ticket
-- [ ] `mise run api:gen` is run and the generated client is committed
-- [ ] Completion notes are filled in and the file is moved to `docs/features/complete/`
+- [x] All ACs are covered by automated tests
+- [x] `mise run check` is green
+- [x] Docs are updated (README / spec / AGENTS / ADR if needed)
+- [x] There are no TODOs without a linked backlog ticket
+- [x] `mise run api:gen` is run and the generated client is committed
+- [x] Completion notes are filled in and the file is moved to `docs/features/complete/`
 
 ## Implementation notes
 - Add `name`, `container`, `difficulty`, `terrain`, `placed_at`, `is_archived`, and `has_corrected` to marker data so MAP-2 can distinguish found, disabled, archived, and corrected caches and MAP-3 can show key popup information without an additional endpoint.
@@ -79,4 +79,7 @@ Spatial predicates must use separate GiST-indexable branches for original and co
 - Update spec §8 with `GET /caches/markers`. `slow` is registered and included in `mise run check:backend` and the CI backend job.
 
 ## Completion notes
-_…_
+- Added shared cache filter, paging, sorting, and result types; list and marker endpoints with RFC 9457 validation errors; and PostGIS-backed filtering using effective coordinates.
+- Added corrected/original location GiST expression indexes with a reversible migration. The 50,000-cache performance test passed its 20-request p95 threshold and verified both spatial indexes.
+- Updated the API specification and regenerated the frontend OpenAPI client.
+- Validation: `mise run check` passed; focused query, migration, domain, and performance tests passed (28 tests).

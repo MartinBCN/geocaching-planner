@@ -82,13 +82,13 @@ def test_baseline_migration_roundtrip(postgis_url: str) -> None:
     config = alembic_config(target_url)
 
     command.upgrade(config, "head")
-    assert _query_scalar(target_url, "SELECT version_num FROM alembic_version") == "0003"
+    assert _query_scalar(target_url, "SELECT version_num FROM alembic_version") == "0004"
     assert _query_scalar(target_url, "SELECT postgis_version()")
     snapshot = _schema_snapshot(target_url)
 
     command.downgrade(config, "-1")
-    assert _query_scalar(target_url, "SELECT version_num FROM alembic_version") == "0002"
-    assert _query_scalar(target_url, "SELECT to_regclass('public.settings')") is None
+    assert _query_scalar(target_url, "SELECT version_num FROM alembic_version") == "0003"
+    assert _query_scalar(target_url, "SELECT to_regclass('public.settings')") == "settings"
 
     command.upgrade(config, "head")
     assert _schema_snapshot(target_url) == snapshot
@@ -100,7 +100,7 @@ def test_baseline_migration_roundtrip(postgis_url: str) -> None:
     assert _query_scalar(target_url, "SELECT postgis_version()")
 
     command.upgrade(config, "head")
-    assert _query_scalar(target_url, "SELECT version_num FROM alembic_version") == "0003"
+    assert _query_scalar(target_url, "SELECT version_num FROM alembic_version") == "0004"
     assert _query_scalar(target_url, "SELECT postgis_version()")
     assert _schema_snapshot(target_url) == snapshot
 
@@ -115,6 +115,8 @@ def test_cache_tables_and_named_indexes_exist(postgis_url: str) -> None:
             indexes: dict[str, str] = dict(rows.all())
             assert "USING gist" in indexes["ix_caches_location_gist"]
             assert "USING gist" in indexes["ix_user_cache_data_corrected_location_gist"]
+            assert "USING gist" in indexes["ix_caches_location_geometry_gist"]
+            assert "USING gist" in indexes["ix_user_cache_data_corrected_geometry_gist"]
             for column in ("type", "difficulty", "terrain", "found_by_me", "is_archived"):
                 assert "USING btree" in indexes[f"ix_caches_{column}"]
         await engine.dispose()

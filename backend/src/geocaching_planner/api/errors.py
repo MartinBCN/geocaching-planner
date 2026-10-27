@@ -11,6 +11,7 @@ from geocaching_planner.api.problem import FieldError, problem_response
 from geocaching_planner.domain.errors import (
     ConflictError,
     DomainError,
+    HomeLocationRequiredError,
     NotFoundError,
     UpstreamUnavailableError,
 )
@@ -20,6 +21,7 @@ logger = structlog.get_logger(__name__)
 DOMAIN_STATUS: dict[type[DomainError], int] = {
     NotFoundError: 404,
     ConflictError: 409,
+    HomeLocationRequiredError: 422,
     UpstreamUnavailableError: 503,
 }
 
