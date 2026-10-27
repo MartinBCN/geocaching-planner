@@ -9,7 +9,7 @@ A local, single-user app for planning **bicycle geocaching trips**. It combines 
 - Plan bike routes with a self-hosted **BRouter**, including an elevation profile
 - Find caches along your route and export everything as GPX for your Garmin
 
-> Status: specification phase. See the [roadmap](docs/specification.md#10-roadmap).
+> Status: implementation in progress. See the [roadmap](docs/specification.md#10-roadmap).
 
 ## Quickstart (after M0 is complete)
 ```bash
@@ -22,6 +22,9 @@ mise run dev            # postgis + brouter + backend + frontend
 Then open http://localhost:5173.
 
 Requirements: [mise](https://mise.jdx.dev) and Docker.
+
+## Import Pocket Queries
+Open `/import` to choose or drop one or more `.gpx` or `.zip` Pocket Query files. A multi-file request is validated before any data is written; each input defaults to a 50 MB limit (`IMPORT_MAX_FILE_MB`), and expanded archive content is capped at 500 MB. The page shows import counts, parse warnings/errors, and newest-first import history.
 
 ## Development / CI
 Before merging, require the `backend`, `frontend`, and `pre-commit` GitHub Actions checks. Playwright E2E is available locally with `mise run test:e2e` and is not run on GitHub-hosted runners.

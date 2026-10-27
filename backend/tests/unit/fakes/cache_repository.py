@@ -101,3 +101,6 @@ class FakeCacheRepository:
         saved = replace(run, id=len(self._import_runs) + 1)
         self._import_runs.append(saved)
         return saved
+
+    async def list_import_runs(self) -> tuple[ImportRun, ...]:
+        return tuple(reversed(self._import_runs))

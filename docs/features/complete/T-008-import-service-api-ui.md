@@ -1,6 +1,6 @@
 # T-008: Import service, API, and UI
 
-- **Status:** Ready
+- **Status:** Complete
 - **Milestone:** M1
 - **Depends on:** T-007, T-024
 - **Requirements:** IMP-1, IMP-4, IMP-5, IMP-6, IMP-7
@@ -33,21 +33,21 @@ T-006 defines the cache aggregate, schema, and content hash. T-024 supplies the 
 - Background jobs or progress streaming.
 
 ## Acceptance criteria
-- [ ] AC1: Given the synthetic `with_waypoints.zip` fixture contains 3 caches, 2 additional waypoints, and 2 logs, when uploaded, then `POST /api/v1/imports` returns 201 with `created=3`, `updated=0`, `unchanged=0`, `waypoints=2`, persists all records, and returns the filenames and run timestamp.
-- [ ] AC2: Given the same fixture is uploaded again with unchanged source fields, logs, and waypoints, when imported, then `created=0`, `updated=0`, `unchanged=3`, existing `updated_at` values remain unchanged, and no log duplicates are created.
-- [ ] AC3: Given one cache's name is changed in a variant fixture, when re-imported, then it reports `updated=1`; given both note and corrected coordinates are stored through the repository, then re-import preserves both.
-- [ ] AC4: Given `<pq>.gpx` and `<pq>-wpts.gpx` are uploaded together, when imported, then matching waypoints are stored; a waypoint-only upload reports unmatched waypoints as warnings rather than attaching them to an arbitrary cache.
-- [ ] AC5: Given `one_corrupt_entry.gpx` contains three entries with the middle one malformed, when imported, then the endpoint returns 201, one file/entry error is reported, and the valid entries are persisted.
-- [ ] AC6: Given an unsupported extension/content, when uploaded, then the endpoint returns 415 `application/problem+json` and imports nothing; given an input over `IMPORT_MAX_FILE_MB`, then it returns 413 problem+json and imports nothing.
-- [ ] AC7: Given a mixed request with one valid file and one file failing pre-validation, when uploaded, then the whole request is rejected before import; given valid files with individual parse errors, then valid entries are imported and represented in the 201 summary.
-- [ ] AC8: Given 1,200 parsed caches, when the service runs, then repository upsert is called in batches of 500, 500, and 200; an `ImportRun` records partial counts on a batch failure when the database remains available.
-- [ ] AC9: Given import history exists, when `GET /api/v1/imports` is requested, then results are newest first and include filenames, timestamps, counts, and errors; an empty history is represented explicitly.
-- [ ] AC10: Given upload processing succeeds or fails, when it completes, then its temporary directory is removed.
-- [ ] AC11: Given import completes in the UI, when queries are observed, then `['imports']` and `['caches']` are invalidated; during upload, buttons are disabled, filenames and “Importing…” are shown, and navigation warns before leaving.
-- [ ] AC12: Given a 1,000-cache synthetic PQ, when imported through the API against PostGIS after migrations, then the complete request finishes under 10 seconds (`slow` marker).
-- [ ] AC13: Given component tests, when API responses represent success, partial errors/warnings, or server failure, then the UI renders the appropriate summary and actionable error details.
-- [ ] AC14: Given the import page, when navigated to through `/import`, then the nav entry and keyboard-focusable “Choose files…” control are available and selecting multiple files works.
-- [ ] AC15: Given the synthetic fixture is uploaded through the UI against a reset test database, when import completes, then the page shows `3 created`, `2 waypoints`, and the filenames.
+- [x] AC1: Given the synthetic `with_waypoints.zip` fixture contains 3 caches, 2 additional waypoints, and 2 logs, when uploaded, then `POST /api/v1/imports` returns 201 with `created=3`, `updated=0`, `unchanged=0`, `waypoints=2`, persists all records, and returns the filenames and run timestamp.
+- [x] AC2: Given the same fixture is uploaded again with unchanged source fields, logs, and waypoints, when imported, then `created=0`, `updated=0`, `unchanged=3`, existing `updated_at` values remain unchanged, and no log duplicates are created.
+- [x] AC3: Given one cache's name is changed in a variant fixture, when re-imported, then it reports `updated=1`; given both note and corrected coordinates are stored through the repository, then re-import preserves both.
+- [x] AC4: Given `<pq>.gpx` and `<pq>-wpts.gpx` are uploaded together, when imported, then matching waypoints are stored; a waypoint-only upload reports unmatched waypoints as warnings rather than attaching them to an arbitrary cache.
+- [x] AC5: Given `one_corrupt_entry.gpx` contains three entries with the middle one malformed, when imported, then the endpoint returns 201, one file/entry error is reported, and the valid entries are persisted.
+- [x] AC6: Given an unsupported extension/content, when uploaded, then the endpoint returns 415 `application/problem+json` and imports nothing; given an input over `IMPORT_MAX_FILE_MB`, then it returns 413 problem+json and imports nothing.
+- [x] AC7: Given a mixed request with one valid file and one file failing pre-validation, when uploaded, then the whole request is rejected before import; given valid files with individual parse errors, then valid entries are imported and represented in the 201 summary.
+- [x] AC8: Given 1,200 parsed caches, when the service runs, then repository upsert is called in batches of 500, 500, and 200; an `ImportRun` records partial counts on a batch failure when the database remains available.
+- [x] AC9: Given import history exists, when `GET /api/v1/imports` is requested, then results are newest first and include filenames, timestamps, counts, and errors; an empty history is represented explicitly.
+- [x] AC10: Given upload processing succeeds or fails, when it completes, then its temporary directory is removed.
+- [x] AC11: Given import completes in the UI, when queries are observed, then `['imports']` and `['caches']` are invalidated; during upload, buttons are disabled, filenames and “Importing…” are shown, and navigation warns before leaving.
+- [x] AC12: Given a 1,000-cache synthetic PQ, when imported through the API against PostGIS after migrations, then the complete request finishes under 10 seconds (`slow` marker).
+- [x] AC13: Given component tests, when API responses represent success, partial errors/warnings, or server failure, then the UI renders the appropriate summary and actionable error details.
+- [x] AC14: Given the import page, when navigated to through `/import`, then the nav entry and keyboard-focusable “Choose files…” control are available and selecting multiple files works.
+- [x] AC15: Given the synthetic fixture is uploaded through the UI against a reset test database, when import completes, then the page shows `3 created`, `2 waypoints`, and the filenames.
 
 ## Test plan
 | AC | Level | Test |
@@ -55,15 +55,15 @@ T-006 defines the cache aggregate, schema, and content hash. T-024 supplies the 
 | AC1–AC10, AC12 | integration (API + PostGIS) | `backend/tests/integration/api/test_imports.py` and `backend/tests/integration/perf/test_import_perf.py` |
 | AC8 | unit | `backend/tests/unit/services/test_import_service.py::test_upserts_in_batches_and_records_partial_counts` |
 | AC11, AC13–AC14 | component | `frontend/src/features/import/ImportPage.test.tsx` |
-| AC15 | e2e | `frontend/e2e/import.spec.ts::imports_synthetic_pq_and_shows_summary` |
+| AC15 | e2e | `frontend/e2e/import.spec.ts::imports a synthetic Pocket Query and shows its summary` |
 
 ## Definition of Done
-- [ ] All ACs are covered by automated tests
-- [ ] `mise run check` is green
-- [ ] Docs are updated (README / spec / AGENTS / ADR if needed)
-- [ ] There are no TODOs without a linked backlog ticket
-- [ ] `mise run api:gen` was run and the generated client was committed
-- [ ] Completion notes are filled in and the file is moved to `docs/features/complete/`
+- [x] All ACs are covered by automated tests
+- [x] `mise run check` is green
+- [x] Docs are updated (README / spec / AGENTS / ADR if needed)
+- [x] There are no TODOs without a linked backlog ticket
+- [x] `mise run api:gen` was run and the generated client was committed
+- [x] Completion notes are filled in and the file is moved to `docs/features/complete/`
 
 ## Implementation notes
 - Use the accepted Problem JSON error contract from T-002. Parser warnings and errors keep `severity`, `file`, `gc_code`, `line`, `code`, and `message`; the UI displays warnings separately.
@@ -74,4 +74,6 @@ T-006 defines the cache aggregate, schema, and content hash. T-024 supplies the 
 - Add `IMPORT_MAX_FILE_MB` to backend configuration and run `mise run api:gen`; commit the regenerated client.
 
 ## Completion notes
-_…_
+Implemented batched async import orchestration, secure multi-file GPX/ZIP prevalidation and temporary staging, PostGIS import/history endpoints, and the accessible `/import` UI with summary, warnings/errors, history, query invalidation, and in-progress navigation protection. Added synthetic API/service/component/E2E/performance coverage and updated README/spec plus generated API types. No schema migration was needed.
+
+Verification: `mise run check` passed; `mise run test:e2e` passed (2 tests), including the synthetic import.

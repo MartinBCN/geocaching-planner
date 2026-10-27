@@ -1,4 +1,5 @@
 import { Route, Routes } from "react-router";
+import { ImportPage } from "../features/import/ImportPage";
 import { SettingsPage } from "../features/settings/SettingsPage";
 import { AppShell } from "./AppShell";
 import { NotFound } from "./NotFound";
@@ -9,7 +10,7 @@ export function AppRoutes() {
     <Routes>
       <Route element={<AppShell />}>
         <Route index element={<PlaceholderPage title="Map" showHealth />} />
-        <Route path="import" element={<PlaceholderPage title="Import" />} />
+        <Route path="import" element={<ImportPage />} />
         <Route path="routes" element={<PlaceholderPage title="Routes" />} />
         <Route path="routes/:id" element={<PlaceholderPage title="Route" />} />
         <Route path="caches/:gc" element={<PlaceholderPage title="Cache" />} />

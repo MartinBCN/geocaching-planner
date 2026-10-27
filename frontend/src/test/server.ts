@@ -16,4 +16,5 @@ export const server = setupServer(
       tile_attribution: "© OpenStreetMap contributors, CyclOSM",
     }),
   ),
+  http.get("*/api/v1/imports", () => HttpResponse.json([])),
 );

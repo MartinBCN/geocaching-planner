@@ -181,6 +181,7 @@ IDs are stable. Tickets reference them.
 
 `source_hash` is a deterministic domain hash over canonical source fields, waypoints, and logs; it excludes user data and persistence timestamps.
 `ImportRun.errors` contains records with `severity`, `file`, optional `gc_code` and `line`, `code`, and human-readable `message`. Warnings use `severity: "warning"` and are presented separately from errors.
+Import orchestration commits cache upserts in batches of 500 and records partial counts if parsing or persistence stops early.
 
 The **effective location** of a cache is `coalesce(user.corrected_location, cache.location)`. It may be projected or ordered by as a SQL expression; spatial predicates use separate corrected-location and original-location branches so both GiST indexes remain usable (ADR-0006).
 
@@ -203,6 +204,8 @@ The **effective location** of a cache is `coalesce(user.corrected_location, cach
 | GET | `/routes/{id}/export.gpx` | track plus optional caches (`include=gc1,gc2`) |
 
 The OpenAPI schema is the contract. The frontend client is generated from it (`openapi-typescript` + `openapi-fetch`).
+
+Import uploads accept multiple named `.gpx` and `.zip` files in one request. The API validates every file before importing any of them, limits each compressed input to `IMPORT_MAX_FILE_MB` (default 50 MB), and caps expanded archive content at 500 MB. Uploads are staged under generated temporary names and removed after success or failure. Parsing is synchronous from the user's perspective, runs off the event loop, and returns one history record for the whole request.
 
 ## 9. Engineering standards
 

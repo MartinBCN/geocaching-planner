@@ -77,3 +77,60 @@ body,
   margin: 0;
   color: #b42318;
 }
+
+.import-page {
+  max-width: 56rem;
+}
+
+.import-page form,
+.import-summary,
+.import-history {
+  display: grid;
+  gap: 1rem;
+  margin-block: 1.5rem;
+}
+
+.import-dropzone {
+  display: grid;
+  justify-items: center;
+  gap: 0.75rem;
+  padding: 2rem;
+  border: 2px dashed #8888;
+  border-radius: 0.5rem;
+}
+
+.import-dropzone button,
+.import-page form > button {
+  font: inherit;
+  padding: 0.55rem 1rem;
+}
+
+.import-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.import-history ol {
+  display: grid;
+  gap: 0.75rem;
+  padding-left: 1.5rem;
+}
+
+.import-history details {
+  border: 1px solid #8884;
+  border-radius: 0.35rem;
+  padding: 0.75rem;
+}
+
+.import-history summary {
+  cursor: pointer;
+}
+
+.import-summary section ul,
+.import-history section ul {
+  padding-left: 1.5rem;
+}
