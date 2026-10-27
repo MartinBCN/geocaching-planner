@@ -12,6 +12,7 @@ from geocaching_planner.api.errors import register_exception_handlers
 from geocaching_planner.api.middleware import RequestIdMiddleware
 from geocaching_planner.api.problem import PROBLEM_MEDIA_TYPE, Problem
 from geocaching_planner.api.routes.health import router as health_router
+from geocaching_planner.api.routes.imports import router as imports_router
 from geocaching_planner.api.routes.settings import router as settings_router
 from geocaching_planner.config import AppConfig
 from geocaching_planner.logging_config import configure_logging
@@ -78,5 +79,6 @@ def create_app(
     app.add_middleware(RequestIdMiddleware)
     register_exception_handlers(app)
     app.include_router(health_router, prefix=API_PREFIX)
+    app.include_router(imports_router, prefix=API_PREFIX)
     app.include_router(settings_router, prefix=API_PREFIX)
     return app

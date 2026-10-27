@@ -160,18 +160,15 @@ class SqlAlchemyCacheRepository:
         except Exception:
             await self._session.rollback()
             raise
-        return ImportRun(
-            id=row.id,
-            started_at=row.started_at,
-            finished_at=row.finished_at,
-            source=row.source,
-            filenames=tuple(row.filenames),
-            created=row.created,
-            updated=row.updated,
-            unchanged=row.unchanged,
-            waypoints=row.waypoints,
-            errors=tuple(_issue_from_json(issue) for issue in row.errors),
+        return _import_run_from_model(row)
+
+    async def list_import_runs(self) -> Sequence[ImportRun]:
+        rows = await self._session.scalars(
+            select(ImportRunModel).order_by(
+                ImportRunModel.started_at.desc(), ImportRunModel.id.desc()
+            )
         )
+        return tuple(_import_run_from_model(row) for row in rows)
 
     async def _replace_waypoints(self, caches: Sequence[Cache], changed: set[str]) -> None:
         replacements = [
@@ -235,6 +232,21 @@ class SqlAlchemyCacheRepository:
                 },
             )
         )
+
+
+def _import_run_from_model(row: ImportRunModel) -> ImportRun:
+    return ImportRun(
+        id=row.id,
+        started_at=row.started_at,
+        finished_at=row.finished_at,
+        source=row.source,
+        filenames=tuple(row.filenames),
+        created=row.created,
+        updated=row.updated,
+        unchanged=row.unchanged,
+        waypoints=row.waypoints,
+        errors=tuple(_issue_from_json(issue) for issue in row.errors),
+    )
 
 
 def _cache_values(cache: Cache) -> dict[str, object]:

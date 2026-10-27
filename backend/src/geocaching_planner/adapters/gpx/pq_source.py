@@ -8,7 +8,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass, replace
 from datetime import UTC, date, datetime, time
 from pathlib import PurePosixPath
-from typing import IO, BinaryIO
+from typing import IO
 
 from lxml import etree
 
@@ -29,6 +29,9 @@ from geocaching_planner.services.ports import (
     ParseError,
     ParseIssue,
     ParseWarning,
+)
+from geocaching_planner.services.ports import (
+    SourceFile as SourceFile,
 )
 
 _MAX_MEMBER_SIZE = 100 * 1024 * 1024
@@ -64,12 +67,6 @@ _WAYPOINT_TYPES: dict[str, WaypointType] = {
 _LOG_TYPES: dict[str, LogType] = {
     item.value.casefold(): item for item in LogType if item is not LogType.OTHER
 }
-
-
-@dataclass(frozen=True)
-class SourceFile:
-    filename: str
-    stream: BinaryIO
 
 
 @dataclass(frozen=True)

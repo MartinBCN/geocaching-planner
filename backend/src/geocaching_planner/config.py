@@ -1,8 +1,9 @@
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class AppConfig(BaseSettings):
-    """Runtime settings. Every field is read from a `GCP_`-prefixed environment variable."""
+    """Runtime settings use `GCP_`-prefixed variables except the import-size override."""
 
     model_config = SettingsConfigDict(env_prefix="GCP_", env_file=".env", extra="ignore")
 
@@ -11,5 +12,6 @@ class AppConfig(BaseSettings):
     log_json: bool = False
     tile_url: str = "https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png"
     tile_attribution: str = "© OpenStreetMap contributors, CyclOSM"
+    import_max_file_mb: int = Field(default=50, gt=0, validation_alias="IMPORT_MAX_FILE_MB")
     # Local development default; matches the compose PostGIS service defaults (compose.yaml).
     database_url: str = "postgresql+asyncpg://geocaching:geocaching@127.0.0.1:5432/geocaching"

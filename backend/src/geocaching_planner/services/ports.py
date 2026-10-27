@@ -2,7 +2,7 @@
 
 from collections.abc import Iterator, Sequence
 from dataclasses import dataclass
-from typing import Literal, Protocol
+from typing import BinaryIO, Literal, Protocol
 
 from geocaching_planner.domain.cache import Cache, ImportRun, UserCacheData, UserCacheDataUpdate
 from geocaching_planner.domain.settings import PlannerSettings
@@ -26,6 +26,14 @@ class CacheRepository(Protocol):
     async def set_user_data(self, gc_code: str, update: UserCacheDataUpdate) -> UserCacheData: ...
 
     async def add_import_run(self, run: ImportRun) -> ImportRun: ...
+
+    async def list_import_runs(self) -> Sequence[ImportRun]: ...
+
+
+@dataclass(frozen=True)
+class SourceFile:
+    filename: str
+    stream: BinaryIO
 
 
 @dataclass(frozen=True, kw_only=True)
