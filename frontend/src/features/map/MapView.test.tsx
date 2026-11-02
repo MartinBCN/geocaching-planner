@@ -20,6 +20,7 @@ const viewBounds = {
   getSouth: () => 51,
   getEast: () => 5,
   getNorth: () => 53,
+  contains: () => true,
 };
 const panBounds = {
   getWest: () => 4.1,
@@ -42,6 +43,7 @@ vi.mock("react-map-gl/maplibre", async () => {
   };
   const map = {
     getBounds: () => viewBounds,
+    getZoom: () => 10,
     easeTo: mapActions.easeTo,
     fitBounds: mapActions.fitBounds,
     flyTo: mapActions.flyTo,
@@ -135,11 +137,27 @@ vi.mock("react-map-gl/maplibre", async () => {
     },
   );
   const Child = ({ children }: { children?: ReactNode }) => <>{children}</>;
+  const MockSource = ({
+    children,
+    data,
+    id,
+  }: {
+    children?: ReactNode;
+    data?: unknown;
+    id?: string;
+  }) => (
+    <div
+      data-testid={`marker-source-${id}`}
+      data-geojson={JSON.stringify(data)}
+    >
+      {children}
+    </div>
+  );
   return {
     default: MockMap,
     Layer: () => null,
     Popup: Child,
-    Source: Child,
+    Source: MockSource,
   };
 });
 
@@ -149,6 +167,12 @@ function renderMap(
     lon: 4.3,
   },
   onLocationSelect?: (location: { lat: number; lon: number }) => void,
+  filters?: {
+    types?: ("Traditional" | "Mystery")[];
+    found?: boolean;
+    text?: string;
+  },
+  highlightedCache?: { gcCode: string; latitude: number; longitude: number },
 ) {
   return render(
     <QueryClientProvider client={createQueryClient(false)}>
@@ -157,6 +181,8 @@ function renderMap(
           homeLocation={homeLocation}
           tileUrl="https://tiles.example/{z}/{x}/{y}.png"
           tileAttribution="Synthetic tile attribution"
+          filters={filters}
+          highlightedCache={highlightedCache}
           onLocationSelect={onLocationSelect}
         />
       </MemoryRouter>
@@ -177,7 +203,7 @@ describe("MapView", () => {
         return HttpResponse.json({
           items: [
             [
-              "GC1ABC",
+              { gcCode: "GC1ABC", latitude: 52.1, longitude: 4.1 },
               "Synthetic cache",
               52.1,
               4.1,
@@ -286,5 +312,58 @@ describe("MapView", () => {
     expect((await screen.findByRole("alert")).textContent).toContain(
       "Marker service unavailable",
     );
+  });
+
+  it("uses shared filters for marker requests and highlights the selected cache", async () => {
+    const markerQueries: URLSearchParams[] = [];
+    server.use(
+      http.get("*/api/v1/caches/markers", ({ request }) => {
+        markerQueries.push(new URL(request.url).searchParams);
+        return HttpResponse.json({
+          items: [
+            [
+              "GC1ABC",
+              "Synthetic cache",
+              52.1,
+              4.1,
+              "Traditional",
+              "Small",
+              1.5,
+              2,
+              false,
+              true,
+              false,
+              false,
+            ],
+          ],
+          truncated: false,
+          total: 1,
+        });
+      }),
+    );
+    renderMap(
+      { lat: 52, lon: 4.3 },
+      undefined,
+      { types: ["Traditional"], found: false, text: "lake" },
+      { gcCode: "GC1ABC", latitude: 52.1, longitude: 4.1 },
+    );
+
+    await waitFor(() => expect(markerQueries).toHaveLength(1));
+    expect(markerQueries[0]?.getAll("types")).toEqual(["Traditional"]);
+    expect(markerQueries[0]?.get("found")).toBe("false");
+    expect(markerQueries[0]?.get("text")).toBe("lake");
+
+    await waitFor(() => {
+      const source = screen.getByTestId("marker-source-cache-markers");
+      const geojson = JSON.parse(
+        source.getAttribute("data-geojson") ?? "{}",
+      ) as {
+        features: { properties: { gcCode: string; highlighted: boolean } }[];
+      };
+      expect(geojson.features[0]?.properties).toMatchObject({
+        gcCode: "GC1ABC",
+        highlighted: true,
+      });
+    });
   });
 });

@@ -44,6 +44,165 @@ body,
   width: calc(100% + 2rem);
   height: calc(100% + 2rem);
   margin: -1rem;
+  min-width: 0;
+  min-height: 0;
+}
+
+.cache-browser {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+.cache-map-pane {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+}
+
+.cache-browser-divider {
+  z-index: 2;
+  width: 8px;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  cursor: col-resize;
+  touch-action: none;
+  background: #8884;
+  border-inline: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.cache-browser-divider:hover,
+.cache-browser-divider:focus-visible {
+  background-color: #2563eb;
+  outline: none;
+}
+
+.cache-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 24rem;
+  min-height: 0;
+  overflow: auto;
+  padding: 1rem;
+  border-left: 1px solid #8884;
+  background: Canvas;
+  color: CanvasText;
+}
+
+.cache-filters {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.cache-filters > label,
+.filter-range label {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.cache-filters input[type="search"],
+.cache-filters input[type="number"],
+.cache-filters select {
+  box-sizing: border-box;
+  width: 100%;
+  font: inherit;
+  padding: 0.4rem;
+}
+
+.cache-filters fieldset {
+  min-width: 0;
+  padding: 0.5rem;
+}
+
+.filter-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.25rem 0.5rem;
+  max-height: 8rem;
+  overflow: auto;
+}
+
+.filter-options label,
+.cache-filters > label:has(input[type="checkbox"]) {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.filter-range {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.filter-range input {
+  width: 100%;
+}
+
+.filter-hint {
+  margin: -0.5rem 0 0;
+  font-size: 0.875rem;
+}
+
+.cache-list {
+  min-width: 0;
+}
+
+.cache-match-count {
+  font-weight: 600;
+}
+
+.cache-table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.cache-list table {
+  width: 100%;
+  border-collapse: collapse;
+  white-space: nowrap;
+}
+
+.cache-list th,
+.cache-list td {
+  padding: 0.45rem 0.5rem;
+  border-bottom: 1px solid #8884;
+  text-align: left;
+}
+
+.cache-list tbody tr {
+  cursor: pointer;
+}
+
+.cache-list tbody tr:hover,
+.cache-list tbody tr:focus-visible {
+  background: #2563eb22;
+  outline: 2px solid #2563eb;
+  outline-offset: -2px;
+}
+
+.cache-type-icon {
+  display: inline-grid;
+  width: 1.5rem;
+  height: 1.5rem;
+  place-items: center;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.cache-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-block: 0.75rem;
 }
 
 .map-view {
@@ -204,4 +363,14 @@ body,
 .import-summary section ul,
 .import-history section ul {
   padding-left: 1.5rem;
+}
+
+.cache-list th button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
 }

@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../../api/client";
 import type { components } from "../../api/schema";
+import { CacheFilterProvider } from "../filters/CacheFilterContext";
 import { HealthIndicator } from "../health/HealthIndicator";
-import { MapView } from "./MapView";
+import { CacheBrowser } from "./CacheBrowser";
 
 type SettingsResponse = components["schemas"]["SettingsResponse"];
 
@@ -32,11 +33,9 @@ export function MapPage() {
       <h1 className="visually-hidden" id="map-page-title">
         Map
       </h1>
-      <MapView
-        homeLocation={settingsQuery.data.home_location}
-        tileUrl={settingsQuery.data.tile_url}
-        tileAttribution={settingsQuery.data.tile_attribution}
-      />
+      <CacheFilterProvider>
+        <CacheBrowser settings={settingsQuery.data} />
+      </CacheFilterProvider>
       <div className="map-health">
         <HealthIndicator />
       </div>

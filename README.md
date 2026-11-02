@@ -27,7 +27,7 @@ Requirements: [mise](https://mise.jdx.dev) and Docker.
 Open `/import` to choose or drop one or more `.gpx` or `.zip` Pocket Query files. A multi-file request is validated before any data is written; each input defaults to a 50 MB limit (`IMPORT_MAX_FILE_MB`), and expanded archive content is capped at 500 MB. The page shows import counts, parse warnings/errors, and newest-first import history.
 
 ## Map
-The home page shows caches in the current map viewport, with native clustering, type and status styling, and a popup linking to cache details. The configured tile attribution remains visible; set a home location in Settings either with coordinates or by choosing a point on the map.
+The home page shows caches in the current map viewport, with native clustering, type and status styling, and a popup linking to cache details. A resizable sidebar contains cache filters and a sortable, paged list; filters are shared by the map and list and are saved in the URL so a filtered view can be shared or restored. The configured tile attribution remains visible; set a home location in Settings either with coordinates or by choosing a point on the map.
 
 ## Development / CI
 Before merging, require the `backend`, `frontend`, and `pre-commit` GitHub Actions checks. Playwright E2E is available locally with `mise run test:e2e` and is not run on GitHub-hosted runners.

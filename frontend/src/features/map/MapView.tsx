@@ -21,6 +21,11 @@ import {
 type SettingsResponse = components["schemas"]["SettingsResponse"];
 type Coordinates = NonNullable<SettingsResponse["home_location"]>;
 type Marker = components["schemas"]["CacheMarkersResponse"]["items"][number];
+type HighlightedCache = {
+  gcCode: string;
+  latitude: number;
+  longitude: number;
+};
 type MarkerQuery =
   paths["/api/v1/caches/markers"]["get"]["parameters"]["query"];
 type MarkerFilters = Omit<MarkerQuery, "bbox">;
@@ -41,6 +46,7 @@ type MarkerProperties = {
   available: boolean;
   archived: boolean;
   corrected: boolean;
+  highlighted: boolean;
 };
 
 interface MapViewProps {
@@ -48,6 +54,7 @@ interface MapViewProps {
   tileUrl: string;
   tileAttribution: string;
   filters?: MarkerFilters;
+  highlightedCache?: HighlightedCache | null;
   onLocationSelect?: (location: Coordinates) => void;
   className?: string;
 }
@@ -119,7 +126,10 @@ function parseMarker(value: unknown): Marker {
   ];
 }
 
-function toFeatureCollection(markers: Marker[]) {
+function toFeatureCollection(
+  markers: Marker[],
+  highlightedGcCode: string | null,
+) {
   return {
     type: "FeatureCollection" as const,
     features: markers.map(
@@ -154,6 +164,7 @@ function toFeatureCollection(markers: Marker[]) {
           available,
           archived,
           corrected,
+          highlighted: gcCode === highlightedGcCode,
         } satisfies MarkerProperties,
       }),
     ),
@@ -165,6 +176,7 @@ export function MapView({
   tileUrl,
   tileAttribution,
   filters = {},
+  highlightedCache = null,
   onLocationSelect,
   className,
 }: MapViewProps) {
@@ -194,9 +206,52 @@ export function MapView({
   });
 
   const features = useMemo(
-    () => toFeatureCollection(markersQuery.data?.items ?? []),
-    [markersQuery.data?.items],
+    () =>
+      toFeatureCollection(
+        markersQuery.data?.items ?? [],
+        highlightedCache?.gcCode ?? null,
+      ),
+    [highlightedCache?.gcCode, markersQuery.data?.items],
   );
+  const highlightedFeatures = useMemo(() => {
+    if (!highlightedCache) {
+      return { type: "FeatureCollection" as const, features: [] };
+    }
+    return {
+      type: "FeatureCollection" as const,
+      features: [
+        {
+          type: "Feature" as const,
+          id: highlightedCache.gcCode,
+          geometry: {
+            type: "Point" as const,
+            coordinates: [
+              highlightedCache.longitude,
+              highlightedCache.latitude,
+            ] as [number, number],
+          },
+          properties: { gcCode: highlightedCache.gcCode },
+        },
+      ],
+    };
+  }, [highlightedCache]);
+
+  useEffect(() => {
+    if (!highlightedCache) {
+      return;
+    }
+    const map = mapRef.current?.getMap();
+    const coordinates: [number, number] = [
+      highlightedCache.longitude,
+      highlightedCache.latitude,
+    ];
+    if (map && !map.getBounds().contains(coordinates)) {
+      map.flyTo({
+        center: coordinates,
+        zoom: Math.max(map.getZoom(), 12),
+      });
+    }
+  }, [highlightedCache]);
   const rasterStyle = useMemo(
     () => ({
       version: 8 as const,
@@ -352,6 +407,7 @@ export function MapView({
         available: Boolean(properties?.available),
         archived: Boolean(properties?.archived),
         corrected: Boolean(properties?.corrected),
+        highlighted: false,
         longitude: coordinates[0],
         latitude: coordinates[1],
       });
@@ -372,6 +428,7 @@ export function MapView({
       className={`map-view${className ? ` ${className}` : ""}`}
       data-testid="cache-map"
       data-marker-source-ready={markerSourceReady}
+      data-highlighted-cache={highlightedCache?.gcCode ?? ""}
     >
       <MapGL
         ref={mapRef}
@@ -433,7 +490,31 @@ export function MapView({
                 "circle-opacity": markerOpacityExpression,
                 "circle-radius": ["case", ["==", ["get", "found"], true], 7, 6],
                 "circle-stroke-color": markerStrokeColorExpression,
-                "circle-stroke-width": markerStrokeWidthExpression,
+                "circle-stroke-width": [
+                  "case",
+                  ["==", ["get", "highlighted"], true],
+                  4,
+                  markerStrokeWidthExpression,
+                ],
+              }}
+            />
+          </Source>
+        )}
+        {highlightedFeatures.features.length > 0 && (
+          <Source
+            id="highlighted-cache-marker"
+            type="geojson"
+            data={highlightedFeatures}
+          >
+            <Layer
+              id="cache-highlight"
+              type="circle"
+              paint={{
+                "circle-color": "#facc15",
+                "circle-opacity": 0,
+                "circle-radius": 11,
+                "circle-stroke-color": "#facc15",
+                "circle-stroke-width": 4,
               }}
             />
           </Source>
